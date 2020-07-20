@@ -30,5 +30,6 @@
     "tor": false,
     "hosting": false
   },
-  "empty": {}
+  "empty": {},
+  "array": []
 }

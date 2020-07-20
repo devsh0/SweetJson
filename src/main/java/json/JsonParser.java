@@ -163,6 +163,11 @@ public class JsonParser {
                     break;
                 case SEEN_OPEN:
                     consume_whitespaces();
+                    if (peek() == ']') {
+                        read();
+                        state = SEEN_CLOSE;
+                        break;
+                    }
                     var type = get_next_element_type();
                     var element = parse_element(type);
                     if (element == null) return null;
