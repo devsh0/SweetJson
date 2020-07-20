@@ -94,7 +94,7 @@ public class JsonParser {
             case 'n':
                 return Element.Type.NULL;
         }
-        if ((next >= '0' && next <= '9') || next == '+' || next == '-' || next == '.')
+        if (is_numeric(next))
             return Element.Type.NUMBER;
         return Element.Type.UNKNOWN;
     }
@@ -131,9 +131,19 @@ public class JsonParser {
         }
     }
 
+    private boolean is_numeric (char ch) {
+        if (ch == '+' || ch == '-')
+            return true;
+        if (ch >= '0' && ch <= '9')
+            return true;
+        if (ch == '.' || ch == 'e' || ch == 'E')
+            return true;
+        return false;
+    }
+
     private Element parse_number () {
         StringBuilder builder = new StringBuilder();
-        while (peek() != ',') {
+        while (is_numeric(peek())) {
             if (failed())
                 return null;
             builder.append(read());
