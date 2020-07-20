@@ -204,7 +204,13 @@ public class JsonParser {
                     break;
                 case SEEN_OPEN:
                     consume_whitespaces();
-                    if (peek() != '"') return null;
+                    next = peek();
+                    if (next == '}') {
+                        read();
+                        state = SEEN_CLOSE;
+                        continue;
+                    }
+                    if (next != '"') return null;
                     var tmp = parse_string();
                     if (tmp == null) return null;
                     key = tmp.string();

@@ -29,5 +29,6 @@
     "proxy": false,
     "tor": false,
     "hosting": false
-  }
+  },
+  "empty": {}
 }
