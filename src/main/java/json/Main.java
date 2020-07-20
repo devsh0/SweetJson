@@ -8,6 +8,7 @@ public class Main {
     public static void main (String[] args) throws IOException {
         var json = Files.readString(Paths.get("test-file.json"));
         var object = JsonParser.parse(json).map();
-        System.out.println(object.get("privacy").map().get("tor").bool());
+        var null_value = object.get("null").object();
+        System.out.println(null_value);
     }
 }

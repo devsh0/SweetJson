@@ -79,7 +79,7 @@ public class JsonParser {
         }
     }
 
-    private Element.Type get_next_element_type () {
+    private Element.Type get_next_value_type () {
         char next = peek();
         switch (next) {
             case '{':
@@ -91,6 +91,8 @@ public class JsonParser {
             case 't':
             case 'f':
                 return Element.Type.BOOL;
+            case 'n':
+                return Element.Type.NULL;
         }
         if ((next >= '0' && next <= '9') || next == '+' || next == '-' || next == '.')
             return Element.Type.NUMBER;
@@ -104,6 +106,7 @@ public class JsonParser {
             case BOOL -> parse_boolean();
             case ARRAY -> parse_array();
             case OBJECT -> parse_object();
+            case NULL -> parse_null();
             default -> null;
         };
     }
@@ -140,11 +143,18 @@ public class JsonParser {
 
     private Element parse_boolean () {
         String literal = new String(read(4));
-        if (literal.equalsIgnoreCase("true"))
+        if (literal.equals("true"))
             return new Element(Boolean.TRUE);
         literal += read();
-        if (literal.equalsIgnoreCase("false"))
+        if (literal.equals("false"))
             return new Element(Boolean.FALSE);
+        return null;
+    }
+
+    private Element parse_null () {
+        String literal = new String(read(4));
+        if (literal.equals("null"))
+            return new Element(null);
         return null;
     }
 
@@ -168,7 +178,7 @@ public class JsonParser {
                         state = SEEN_CLOSE;
                         break;
                     }
-                    var type = get_next_element_type();
+                    var type = get_next_value_type();
                     var element = parse_element(type);
                     if (element == null) return null;
                     list.add(element);
@@ -182,7 +192,7 @@ public class JsonParser {
                     break;
                 case SEEN_COMA:
                     consume_whitespaces();
-                    if (get_next_element_type() == Element.Type.UNKNOWN) return null;
+                    if (get_next_value_type() == Element.Type.UNKNOWN) return null;
                     // We didn't...but the state is identical.
                     state = SEEN_OPEN;
                     break;
@@ -228,7 +238,7 @@ public class JsonParser {
                     break;
                 case SEEN_COLON:
                     consume_whitespaces();
-                    var type = get_next_element_type();
+                    var type = get_next_value_type();
                     var element = parse_element(type);
                     if (element == null) return null;
                     map.put(key, element);
@@ -242,7 +252,7 @@ public class JsonParser {
                     break;
                 case SEEN_COMA:
                     consume_whitespaces();
-                    if (get_next_element_type() == Element.Type.UNKNOWN) return null;
+                    if (get_next_value_type() == Element.Type.UNKNOWN) return null;
                     state = SEEN_OPEN;
                     break;
                 case SEEN_CLOSE:
@@ -253,7 +263,7 @@ public class JsonParser {
 
     public Element parse () {
         var error = new RuntimeException("ParseError");
-        Element element = switch (get_next_element_type()) {
+        Element element = switch (get_next_value_type()) {
             case ARRAY -> parse_array();
             case OBJECT -> parse_object();
             default -> throw error;
