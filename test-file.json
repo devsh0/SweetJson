@@ -1,0 +1,33 @@
+{
+  "ip": "66.87.125.72",
+  "hostname": "ip-66-87-125-72.spfdma.spcsdns.net",
+  "city": "Springfield",
+  "region": "Massachusetts",
+  "country": "US",
+  "loc": "42.0999,-72.5783",
+  "postal": "01105",
+  "timezone": "America/New_York",
+  "asn": {
+    "asn": "AS10507",
+    "name": "Sprint Personal Communications Systems",
+    "domain": "sprint.net",
+    "route": "66.87.125.0/24",
+    "type": "isp"
+  },
+  "company": {
+    "name": "Sprint Springfield POP\n",
+    "domain": "sprint.com",
+    "type": "isp"
+  },
+  "carrier": {
+    "name": "Sprint Corporation",
+    "mcc": "310",
+    "mnc": "120"
+  },
+  "privacy": {
+    "vpn": true,
+    "proxy": false,
+    "tor": false,
+    "hosting": false
+  }
+}
