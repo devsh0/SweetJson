@@ -220,7 +220,7 @@ public class JsonParser {
 
         String key = "";
         char next = 0;
-        while(true) {
+        while (true) {
             switch (state) {
                 case BEGIN:
                     consume_whitespaces();
@@ -272,14 +272,22 @@ public class JsonParser {
     }
 
     public Element parse () {
-        var error = new RuntimeException("ParseError");
-        Element element = switch (get_next_value_type()) {
-            case ARRAY -> parse_array();
-            case OBJECT -> parse_object();
-            default -> throw error;
-        };
-        if (element == null) throw error;
-        return element;
+        try {
+            Element element = switch (get_next_value_type()) {
+                case ARRAY -> parse_array();
+                case OBJECT -> parse_object();
+                default -> null;
+            };
+            if (element == null) throw new RuntimeException("Invalid JSON file!");
+            return element;
+        } catch (RuntimeException re) {
+            String message = re.getMessage();
+            String vicinity = new String(read(20)).replaceAll("\\s", "");
+            if (!vicinity.isEmpty())
+                message += "\nFailed before reaching here: `" + vicinity + "`";
+            System.err.println(message);
+            throw re;
+        }
     }
 
     public static Element parse (final Path file_path) {
