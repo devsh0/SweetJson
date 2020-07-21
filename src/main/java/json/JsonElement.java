@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
-public class Element {
+public class JsonElement {
     public enum Type {
         UNKNOWN,
         STRING,
@@ -18,10 +18,10 @@ public class Element {
     private final Object m_value;
     private final Type m_type;
 
-    private Map<String, Element> m_as_map = null;
-    private List<Element> m_as_list = null;
+    private Map<String, JsonElement> m_as_map = null;
+    private List<JsonElement> m_as_list = null;
 
-    Element (final Object value) {
+    JsonElement (final Object value) {
         m_value = value;
         if (value instanceof String)
             m_type = Type.STRING;
@@ -32,10 +32,10 @@ public class Element {
         else if (value == null)
             m_type = Type.NULL;
         else if (value instanceof Map) {
-            m_as_map = (Map<String, Element>) value;
+            m_as_map = (Map<String, JsonElement>) value;
             m_type = Type.OBJECT;
         } else if (value instanceof List) {
-            m_as_list = (List<Element>) value;
+            m_as_list = (List<JsonElement>) value;
             m_type = Type.ARRAY;
         } else throw new RuntimeException("Incompatible value type `" + value.getClass().getName() + "`");
     }
@@ -45,12 +45,12 @@ public class Element {
             throw new RuntimeException("Cannot convert value to " + type_str + "!");
     }
 
-    final List<Element> arraylist () {
+    final List<JsonElement> arraylist () {
         verify_type_or_throw(Type.ARRAY, "ArrayList");
         return m_as_list;
     }
 
-    final Map<String, Element> map () {
+    final Map<String, JsonElement> map () {
         verify_type_or_throw(Type.OBJECT, "Map");
         return m_as_map;
     }
@@ -72,5 +72,13 @@ public class Element {
 
     final Object object () {
         return m_value;
+    }
+
+    final Type get_type() {
+        return m_type;
+    }
+
+    final boolean is_primitive() {
+        return m_type != Type.ARRAY && m_type != Type.OBJECT && m_type != Type.UNKNOWN;
     }
 }

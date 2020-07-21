@@ -65,27 +65,27 @@ public class JsonParser {
         }
     }
 
-    private Element.Type get_next_value_type () {
+    private JsonElement.Type get_next_value_type () {
         char next = peek();
         switch (next) {
             case '{':
-                return Element.Type.OBJECT;
+                return JsonElement.Type.OBJECT;
             case '[':
-                return Element.Type.ARRAY;
+                return JsonElement.Type.ARRAY;
             case '"':
-                return Element.Type.STRING;
+                return JsonElement.Type.STRING;
             case 't':
             case 'f':
-                return Element.Type.BOOL;
+                return JsonElement.Type.BOOL;
             case 'n':
-                return Element.Type.NULL;
+                return JsonElement.Type.NULL;
         }
         if (is_numeric(next))
-            return Element.Type.NUMBER;
-        return Element.Type.UNKNOWN;
+            return JsonElement.Type.NUMBER;
+        return JsonElement.Type.UNKNOWN;
     }
 
-    private Element parse_element (final Element.Type type) {
+    private JsonElement parse_element (final JsonElement.Type type) {
         return switch (type) {
             case STRING -> parse_string();
             case NUMBER -> parse_number();
@@ -97,7 +97,7 @@ public class JsonParser {
         };
     }
 
-    private Element parse_string () {
+    private JsonElement parse_string () {
         StringBuilder builder = new StringBuilder();
         read(); // consume " at the beginning
         while (true) {
@@ -108,7 +108,7 @@ public class JsonParser {
                     builder.append(read());
                     break;
                 case '"':
-                    return new Element(builder.toString());
+                    return new JsonElement(builder.toString());
                 default:
                     builder.append(current);
             }
@@ -125,34 +125,34 @@ public class JsonParser {
         return false;
     }
 
-    private Element parse_number () {
+    private JsonElement parse_number () {
         StringBuilder builder = new StringBuilder();
         while (is_numeric(peek()))
             builder.append(read());
-        return new Element(Double.parseDouble(builder.toString()));
+        return new JsonElement(Double.parseDouble(builder.toString()));
     }
 
-    private Element parse_boolean () {
+    private JsonElement parse_boolean () {
         String literal = new String(read(4));
         if (literal.equals("true"))
-            return new Element(Boolean.TRUE);
+            return new JsonElement(Boolean.TRUE);
         literal += read();
         if (literal.equals("false"))
-            return new Element(Boolean.FALSE);
+            return new JsonElement(Boolean.FALSE);
         throw new RuntimeException("Invalid literal `" + literal + "` for boolean!");
     }
 
-    private Element parse_null () {
+    private JsonElement parse_null () {
         String literal = new String(read(4));
         if (literal.equals("null"))
-            return new Element(null);
+            return new JsonElement(null);
         throw new RuntimeException("Invalid literal `" + literal + "` for null!");
     }
 
-    private Element parse_array () {
+    private JsonElement parse_array () {
         final int BEGIN = 0, SEEN_OPEN = 1, SEEN_CLOSE = 2, SEEN_COMA = 3, SEEN_ELEMENT = 4;
         int state = BEGIN;
-        List<Element> list = new ArrayList<>();
+        List<JsonElement> list = new ArrayList<>();
 
         char next = 0;
         while (true) {
@@ -183,22 +183,22 @@ public class JsonParser {
                     break;
                 case SEEN_COMA:
                     consume_whitespaces();
-                    if (get_next_value_type() == Element.Type.UNKNOWN)
+                    if (get_next_value_type() == JsonElement.Type.UNKNOWN)
                         throw new RuntimeException("Unknown value type!");
                     // We didn't...but the state is identical.
                     state = SEEN_OPEN;
                     break;
                 case SEEN_CLOSE:
-                    return new Element(list);
+                    return new JsonElement(list);
             }
         }
     }
 
-    private Element parse_object () {
+    private JsonElement parse_object () {
         final int BEGIN = 0, SEEN_OPEN = 1, SEEN_KEY = 2, SEEN_COLON = 3;
         final int SEEN_VALUE = 4, SEEN_COMA = 5, SEEN_CLOSE = 6;
         int state = BEGIN;
-        Map<String, Element> map = new HashMap<>();
+        Map<String, JsonElement> map = new HashMap<>();
 
         String key = "";
         char next = 0;
@@ -246,25 +246,25 @@ public class JsonParser {
                     break;
                 case SEEN_COMA:
                     consume_whitespaces();
-                    if (get_next_value_type() == Element.Type.UNKNOWN)
+                    if (get_next_value_type() == JsonElement.Type.UNKNOWN)
                         throw new RuntimeException("Unknown value type!");
                     state = SEEN_OPEN;
                     break;
                 case SEEN_CLOSE:
-                    return new Element(map);
+                    return new JsonElement(map);
             }
         }
     }
 
-    public Element parse () {
+    public JsonElement parse () {
         try {
-            Element element = switch (get_next_value_type()) {
+            JsonElement jsonElement = switch (get_next_value_type()) {
                 case ARRAY -> parse_array();
                 case OBJECT -> parse_object();
                 default -> null;
             };
-            if (element == null) throw new RuntimeException("Invalid JSON file!");
-            return element;
+            if (jsonElement == null) throw new RuntimeException("Invalid JSON file!");
+            return jsonElement;
         } catch (RuntimeException re) {
             String message = re.getMessage();
             String vicinity = new String(read(20)).replaceAll("\\s", "");
@@ -275,7 +275,7 @@ public class JsonParser {
         }
     }
 
-    public static Element parse (final Path file_path) {
+    public static JsonElement parse (final Path file_path) {
         try {
             return (new JsonParser(file_path)).parse();
         } catch (IOException ioe) {
@@ -283,7 +283,7 @@ public class JsonParser {
         }
     }
 
-    public static Element parse (final String json) {
+    public static JsonElement parse (final String json) {
         return (new JsonParser(json)).parse();
     }
 }
