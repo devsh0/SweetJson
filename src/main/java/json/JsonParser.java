@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 public class JsonParser {
-    private boolean m_failed = false;
     private final InputStream m_stream;
 
     public JsonParser (final Path file_path) throws IOException {
@@ -25,11 +24,10 @@ public class JsonParser {
         StringBuilder builder = new StringBuilder();
         try {
             builder.append(new String(m_stream.readNBytes(count)));
+            return builder.toString().getBytes();
         } catch (IOException ioe) {
-            System.out.println("IOError: " + ioe.getMessage());
-            set_failed();
+            throw new RuntimeException(ioe);
         }
-        return builder.toString().getBytes();
     }
 
     private char read () {
@@ -43,24 +41,12 @@ public class JsonParser {
             m_stream.reset();
             return bytes;
         } catch (IOException ioe) {
-            System.out.println("IOError: " + ioe.getMessage());
-            set_failed();
-            return "".getBytes();
+            throw new RuntimeException(ioe);
         }
     }
 
     private char peek () {
         return (char) peek(1)[0];
-    }
-
-    private void set_failed () {
-        m_failed = true;
-    }
-
-    private boolean failed () {
-        boolean old = m_failed;
-        m_failed = false;
-        return old;
     }
 
     private void consume_whitespaces () {
@@ -115,8 +101,6 @@ public class JsonParser {
         StringBuilder builder = new StringBuilder();
         read(); // consume " at the beginning
         while (true) {
-            if (failed())
-                return null;
             char current = read();
             switch (current) {
                 case '\\':
@@ -143,11 +127,8 @@ public class JsonParser {
 
     private Element parse_number () {
         StringBuilder builder = new StringBuilder();
-        while (is_numeric(peek())) {
-            if (failed())
-                return null;
+        while (is_numeric(peek()))
             builder.append(read());
-        }
         return new Element(Double.parseDouble(builder.toString()));
     }
 
@@ -158,14 +139,14 @@ public class JsonParser {
         literal += read();
         if (literal.equals("false"))
             return new Element(Boolean.FALSE);
-        return null;
+        throw new RuntimeException("Invalid literal `" + literal + "` for boolean!");
     }
 
     private Element parse_null () {
         String literal = new String(read(4));
         if (literal.equals("null"))
             return new Element(null);
-        return null;
+        throw new RuntimeException("Invalid literal `" + literal + "` for null!");
     }
 
     private Element parse_array () {
@@ -178,7 +159,8 @@ public class JsonParser {
             switch (state) {
                 case BEGIN:
                     consume_whitespaces();
-                    if (read() != '[') return null;
+                    if (read() != '[')
+                        throw new RuntimeException("Expected `[`!");
                     state = SEEN_OPEN;
                     break;
                 case SEEN_OPEN:
@@ -189,20 +171,20 @@ public class JsonParser {
                         break;
                     }
                     var type = get_next_value_type();
-                    var element = parse_element(type);
-                    if (element == null) return null;
-                    list.add(element);
+                    list.add(parse_element(type));
                     state = SEEN_ELEMENT;
                     break;
                 case SEEN_ELEMENT:
                     consume_whitespaces();
                     next = read();
-                    if (next != ']' && next != ',') return null;
+                    if (next != ']' && next != ',')
+                        throw new RuntimeException("Expected `]` or `,`!");
                     state = next == ']' ? SEEN_CLOSE : SEEN_COMA;
                     break;
                 case SEEN_COMA:
                     consume_whitespaces();
-                    if (get_next_value_type() == Element.Type.UNKNOWN) return null;
+                    if (get_next_value_type() == Element.Type.UNKNOWN)
+                        throw new RuntimeException("Unknown value type!");
                     // We didn't...but the state is identical.
                     state = SEEN_OPEN;
                     break;
@@ -224,7 +206,8 @@ public class JsonParser {
             switch (state) {
                 case BEGIN:
                     consume_whitespaces();
-                    if (read() != '{') return null;
+                    if (read() != '{')
+                        throw new RuntimeException("Expected `{`!");
                     state = SEEN_OPEN;
                     break;
                 case SEEN_OPEN:
@@ -235,34 +218,36 @@ public class JsonParser {
                         state = SEEN_CLOSE;
                         continue;
                     }
-                    if (next != '"') return null;
+                    if (next != '"')
+                        throw new RuntimeException("Expected `\"`!");
                     var tmp = parse_string();
-                    if (tmp == null) return null;
                     key = tmp.string();
                     state = SEEN_KEY;
                     break;
                 case SEEN_KEY:
                     consume_whitespaces();
-                    if (read() != ':') return null;
+                    if (read() != ':')
+                        throw new RuntimeException("Expected `:`!");
                     state = SEEN_COLON;
                     break;
                 case SEEN_COLON:
                     consume_whitespaces();
                     var type = get_next_value_type();
                     var element = parse_element(type);
-                    if (element == null) return null;
                     map.put(key, element);
                     state = SEEN_VALUE;
                     break;
                 case SEEN_VALUE:
                     consume_whitespaces();
                     next = read();
-                    if (next != ',' && next != '}') return null;
+                    if (next != ',' && next != '}')
+                        throw new RuntimeException("Expected `,` or `}`!");
                     state = next == '}' ? SEEN_CLOSE : SEEN_COMA;
                     break;
                 case SEEN_COMA:
                     consume_whitespaces();
-                    if (get_next_value_type() == Element.Type.UNKNOWN) return null;
+                    if (get_next_value_type() == Element.Type.UNKNOWN)
+                        throw new RuntimeException("Unknown value type!");
                     state = SEEN_OPEN;
                     break;
                 case SEEN_CLOSE:
