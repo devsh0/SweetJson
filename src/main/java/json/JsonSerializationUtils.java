@@ -3,8 +3,8 @@ package json;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JsonSerializationUtils {
     public static Object create_instance (final Class<?> prototype) {
@@ -18,13 +18,13 @@ public class JsonSerializationUtils {
         }
     }
 
-    public static List<Field> get_serializable_fields (final Class<?> prototype) {
+    public static Map<String, Field> get_serializable_fields (final Class<?> prototype) {
         var fields = prototype.getDeclaredFields();
-        List<Field> filtered = new ArrayList<>(fields.length);
+        Map<String, Field> filtered = new HashMap<>();
         for (var field : fields) {
             var modifier = field.getModifiers();
             if (!Modifier.isTransient(modifier))
-                filtered.add(field);
+                filtered.put(field.getName(), field);
         }
         return filtered;
     }

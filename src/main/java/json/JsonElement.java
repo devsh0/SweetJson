@@ -82,7 +82,7 @@ public class JsonElement {
         return m_type != Type.ARRAY && m_type != Type.OBJECT && m_type != Type.UNKNOWN;
     }
 
-    Object build_data_object (final Class<?> prototype) {
+    Object to_object (final Class<?> prototype) {
         if (m_as_map == null)
             throw new RuntimeException("Data objects can only be constructed from maps!");
         return new JsonObjectAdapter(m_as_map, prototype).build_model();
