@@ -93,7 +93,7 @@ public class JsonParser {
             case ARRAY -> parse_array();
             case OBJECT -> parse_object();
             case NULL -> parse_null();
-            default -> null;
+            default -> throw new RuntimeException("Element of UNKNOWN type cannot be parsed!");
         };
     }
 
