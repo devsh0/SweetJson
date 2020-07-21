@@ -216,7 +216,7 @@ public class JsonParser {
                     if (next == '}') {
                         read();
                         state = SEEN_CLOSE;
-                        continue;
+                        break;
                     }
                     if (next != '"')
                         throw new RuntimeException("Expected `\"`!");
@@ -258,13 +258,13 @@ public class JsonParser {
 
     public JsonElement parse () {
         try {
-            JsonElement jsonElement = switch (get_next_value_type()) {
+            JsonElement json_element = switch (get_next_value_type()) {
                 case ARRAY -> parse_array();
                 case OBJECT -> parse_object();
                 default -> null;
             };
-            if (jsonElement == null) throw new RuntimeException("Invalid JSON file!");
-            return jsonElement;
+            if (json_element == null) throw new RuntimeException("Invalid JSON file!");
+            return json_element;
         } catch (RuntimeException re) {
             String message = re.getMessage();
             String vicinity = new String(read(20)).replaceAll("\\s", "");
