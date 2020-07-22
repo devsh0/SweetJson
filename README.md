@@ -1,6 +1,7 @@
 ### Features
 - Super naive.
 - Only 90% compliant with the specs.
+- Deserialization not supported yet.
 - Purposefully written to overcome boredom.
 
 ### Usage
@@ -42,7 +43,7 @@ public class Main {
 
 Serialization is easy. The `parse` method returns a `JsonElement` which allows serializing itself to some data model
 through the `serialize` method. If the `JsonElement` is an array type, the serializer will return an array of
-`Class`es wrapped in an `Object`.
+specified type wrapped in an `Object`.
 
 _data.json_
 ```json
@@ -96,6 +97,35 @@ public class Main {
     public static void main (String[] args) throws IOException {
         var json = Files.readString(Paths.get("data.json"));
         var order = (Order)JsonParser.parse(json).serialize(Order.class);
+        if (order.success())
+            order.print_details();
+    }
+}
+```
+
+We can register our own serializers. Here we register a serializer for `ArryayList`. 
+
+```java
+public class Main {
+    public static void main (String[] args) throws IOException {
+        var json = Files.readString(Paths.get("test-file.json"));
+        var element = JsonParser.parse(json);
+
+        AbstractBinder.register_new(TypeDefinition.wrap(List.class), new AbstractBinder() {
+            @Override
+            public Object construct (JsonElement json_element, TypeDefinition definition) {
+                var model = new ArrayList<>();
+                var arg = definition.first_type_arg();
+                var list = json_element.arraylist();
+                for (var element : list)
+                    model.add(element.serialize(arg));
+                return model;
+            }
+        }.getClass());
+
+        // The serializer knows how to serialize lists.
+        // We're good even if `Order` includes `List`s.
+        var order = (Order)element.serialize(Order.class);
         if (order.success())
             order.print_details();
     }

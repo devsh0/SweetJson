@@ -4,29 +4,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractBinder {
-    private static final Map<Class<?>, Class<? extends AbstractBinder>> CUSTOM_BINDERS = new HashMap<>();
+    private static final Map<TypeDefinition, Class<? extends AbstractBinder>> CUSTOM_BINDERS = new HashMap<>();
 
-    protected Object get_primitive (final JsonElement element, final Class<?> prototype) {
-        return switch (element.get_type()) {
-            case STRING -> element.string();
-            case NUMBER -> JsonSerializationUtils.get_number_field(element, prototype);
-            case BOOL -> element.bool();
-            case NULL -> null;
-            default -> throw new RuntimeException("Attempted to construct primitive from non-primitive value!");
-        };
+    public abstract Object construct (final JsonElement element, final TypeDefinition definition);
+
+    public static void register_new (final TypeDefinition definition, final Class<? extends AbstractBinder> binder) {
+        CUSTOM_BINDERS.put(definition, binder);
     }
 
-    public abstract Object build_model (final JsonElement json_element, final Class<?> prototype);
-
-    public static void register_binder (final Class<?> prototype, final Class<? extends AbstractBinder> binder) {
-        CUSTOM_BINDERS.put(prototype, binder);
-    }
-
-    public static AbstractBinder get_binder (final Class<?> prototype) {
-        var binder_type = CUSTOM_BINDERS.get(prototype);
-        if (binder_type == null) {
-            binder_type = prototype.isArray() ? JsonArrayBinder.class : JsonObjectBinder.class;
-        }
-        return (AbstractBinder)JsonSerializationUtils.create_instance(binder_type);
+    public static AbstractBinder get_binder (final TypeDefinition type) {
+        var binder = CUSTOM_BINDERS.get(type);
+        binder = (binder == null) ? (type.klass().isArray() ? JsonArrayBinder.class : JsonObjectBinder.class) : binder;
+        return (AbstractBinder)JsonSerializationUtils.create_instance(binder);
     }
 }

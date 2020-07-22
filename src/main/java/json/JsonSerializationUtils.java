@@ -3,6 +3,7 @@ package json;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,5 +46,28 @@ public class JsonSerializationUtils {
         else if (class_name.contains("float"))
             return (float) number;
         return number;
+    }
+
+    public static TypeDefinition get_type_definition (final Field field) {
+        var gen_type = field.getGenericType();
+        var klass = field.getType();
+        if (!(gen_type instanceof ParameterizedType))
+            return new TypeDefinition(klass);
+        var type = (ParameterizedType) gen_type;
+        var type_args = type.getActualTypeArguments();
+        Class<?>[] args = new Class<?>[type_args.length];
+        for (int i = 0; i < args.length; i++)
+            args[i] = (Class<?>) type_args[i];
+        return new TypeDefinition(klass, args);
+    }
+
+    public static Object get_primitive (final JsonElement element, final Class<?> prototype) {
+        return switch (element.get_type()) {
+            case STRING -> element.string();
+            case NUMBER -> JsonSerializationUtils.get_number_field(element, prototype);
+            case BOOL -> element.bool();
+            case NULL -> null;
+            default -> throw new RuntimeException("Attempted to construct primitive from non-primitive value!");
+        };
     }
 }

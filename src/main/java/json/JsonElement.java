@@ -82,8 +82,9 @@ public class JsonElement {
         return m_type != Type.ARRAY && m_type != Type.OBJECT && m_type != Type.UNKNOWN;
     }
 
-    Object serialize (Class<?> prototype) {
+    final Object serialize (Class<?> prototype) {
         prototype = m_type == Type.ARRAY ? prototype.arrayType() : prototype;
-        return AbstractBinder.get_binder(prototype).build_model(this, prototype);
+        var definition = new TypeDefinition(prototype);
+        return AbstractBinder.get_binder(definition).construct(this, definition);
     }
 }

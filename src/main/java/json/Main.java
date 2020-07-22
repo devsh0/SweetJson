@@ -3,6 +3,8 @@ package json;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 class Order {
     static class PaymentOptions {
@@ -14,6 +16,7 @@ class Order {
         private String name;
         private String email;
         private String id;
+        private List<PaymentOptions> payment_options;
     }
 
     private User user;
@@ -27,6 +30,8 @@ class Order {
         System.out.println("user-id: " + user.id);
         System.out.println("user-name: " + user.name);
         System.out.println("user-email: " + user.email);
+        for (var option : user.payment_options)
+            System.out.println(option.name);
         System.out.println("order-id: " + id);
         System.out.println("product: " + product);
         System.out.println("quantity: " + quantity);
@@ -40,9 +45,26 @@ class Order {
 }
 
 public class Main {
+    private static void register_list_binder () {
+        AbstractBinder.register_new(TypeDefinition.wrap(List.class), new AbstractBinder() {
+            @Override
+            public Object construct (JsonElement element, TypeDefinition definition) {
+                var model = new ArrayList<>();
+                var arg = definition.first_type_arg();
+                var list = element.arraylist();
+                list.forEach(entry -> model.add(entry.serialize(arg)));
+                return model;
+            }
+        }.getClass());
+    }
+
     public static void main (String[] args) throws IOException {
         var json = Files.readString(Paths.get("test-file.json"));
-        var order = ((Order)JsonParser.parse(json).serialize(Order.class));
+        var element = JsonParser.parse(json);
+        register_list_binder();
+        // The serializer knows how to serialize lists.
+        // We're good even if `Order` includes `List`s.
+        var order = (Order)element.serialize(Order.class);
         if (order.success())
             order.print_details();
     }

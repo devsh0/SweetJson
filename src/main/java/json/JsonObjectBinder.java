@@ -12,9 +12,9 @@ public class JsonObjectBinder extends AbstractBinder {
         var field = m_serializable_fields.get(key);
         if (field != null) {
             field.setAccessible(true);
-            var field_type = field.getType();
+            var field_type = JsonSerializationUtils.get_type_definition(field);
             var binder = AbstractBinder.get_binder(field_type);
-            field.set(m_model, binder.build_model(element, field_type));
+            field.set(m_model, binder.construct(element, field_type));
         }
     }
 
@@ -22,15 +22,15 @@ public class JsonObjectBinder extends AbstractBinder {
         var field = m_serializable_fields.get(key);
         if (field != null) {
             field.setAccessible(true);
-            field.set(m_model, get_primitive(element, field.getType()));
+            field.set(m_model, JsonSerializationUtils.get_primitive(element, field.getType()));
         }
     }
 
-    public Object build_model (final JsonElement json_element, final Class<?> prototype) {
+    public Object construct (final JsonElement element, final TypeDefinition definition) {
         try {
-            Map<String, JsonElement> m_map = json_element.map();
-            m_model = JsonSerializationUtils.create_instance(prototype);
-            m_serializable_fields = JsonSerializationUtils.get_serializable_fields(prototype);
+            Map<String, JsonElement> m_map = element.map();
+            m_model = JsonSerializationUtils.create_instance(definition.klass());
+            m_serializable_fields = JsonSerializationUtils.get_serializable_fields(definition.klass());
 
             for (var entry : m_map.entrySet()) {
                 var key = entry.getKey();

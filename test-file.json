@@ -2,7 +2,17 @@
   "user": {
     "name": "John Doe",
     "email": "johndoe@example.com",
-    "id": "USRLJFDLJ5353"
+    "id": "USRLJFDLJ5353",
+    "payment_options": [
+      {
+        "name": "Visa",
+        "limit": 2000
+      },
+      {
+        "name": "Mastercard",
+        "limit": 3000
+      }
+    ]
   },
   "id": "ODRFFEKDLAJ23R3",
   "product": "Book",
