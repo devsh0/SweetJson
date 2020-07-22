@@ -2,8 +2,7 @@
   "user": {
     "name": "John Doe",
     "email": "johndoe@example.com",
-    "id": "USRLJFDLJ5353",
-    "methods": [1, 2, 3, 5.0]
+    "id": "USRLJFDLJ5353"
   },
   "id": "ODRFFEKDLAJ23R3",
   "product": "Book",

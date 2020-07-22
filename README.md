@@ -41,7 +41,8 @@ public class Main {
 ```
 
 Serialization is easy. The `parse` method returns a `JsonElement` which allows serializing itself to some data model
-through the `to_object` method.
+through the `serialize` method. If the `JsonElement` is an array type, the serializer will return an array of
+`Class`es wrapped in an `Object`.
 
 _data.json_
 ```json
@@ -94,7 +95,7 @@ class Order {
 public class Main {
     public static void main (String[] args) throws IOException {
         var json = Files.readString(Paths.get("data.json"));
-        var order = (Order)JsonParser.parse(json).to_object(Order.class);
+        var order = (Order)JsonParser.parse(json).serialize(Order.class);
         if (order.success())
             order.print_details();
     }

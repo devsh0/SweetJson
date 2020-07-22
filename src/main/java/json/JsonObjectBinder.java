@@ -1,40 +1,37 @@
 package json;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 
-import static json.JsonElement.Type.OBJECT;
-
 public class JsonObjectBinder extends AbstractBinder {
-    private final Map<String, JsonElement> m_map;
-    private final Object m_model;
-
-    public JsonObjectBinder (final Map<String, JsonElement> map, final Class<?> prototype) {
-        super(prototype);
-        m_map = map;
-        m_model = JsonSerializationUtils.create_instance(prototype);
-    }
+    // These need to be reset for each new binding request.
+    private Object m_model;
+    private Map<String, Field> m_serializable_fields;
 
     private void bind_object (final String key, final JsonElement element) throws IllegalAccessException {
-        var field = super.m_serializable_fields.get(key);
+        var field = m_serializable_fields.get(key);
         if (field != null) {
             field.setAccessible(true);
             var field_type = field.getType();
-            var is_object = element.get_type() == OBJECT;
-            var klass = is_object ? field_type : field_type.getComponentType();
-            field.set(m_model, is_object ? element.to_object(klass) : element.to_array_of(klass));
+            var binder = AbstractBinder.get_binder(field_type);
+            field.set(m_model, binder.build_model(element, field_type));
         }
     }
 
     private void bind_primitive (final String key, final JsonElement element) throws IllegalAccessException {
-        var field = super.m_serializable_fields.get(key);
+        var field = m_serializable_fields.get(key);
         if (field != null) {
             field.setAccessible(true);
             field.set(m_model, get_primitive(element, field.getType()));
         }
     }
 
-    public Object build_model () {
+    public Object build_model (final JsonElement json_element, final Class<?> prototype) {
         try {
+            Map<String, JsonElement> m_map = json_element.map();
+            m_model = JsonSerializationUtils.create_instance(prototype);
+            m_serializable_fields = JsonSerializationUtils.get_serializable_fields(prototype);
+
             for (var entry : m_map.entrySet()) {
                 var key = entry.getKey();
                 var value = entry.getValue();
