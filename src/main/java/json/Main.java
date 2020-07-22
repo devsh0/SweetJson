@@ -9,19 +9,22 @@ class Order {
         String name;
         String email;
         String id;
+        int[] methods;
     }
 
     private User user;
     private String id;
     private String product;
     private int quantity;
-    private double price;
+    private Integer price;
     private boolean success;
 
     void print_details() {
         System.out.println("user-id: " + user.id);
         System.out.println("user-name: " + user.name);
         System.out.println("user-email: " + user.email);
+        for (var method : user.methods)
+            System.out.println("method: " + method);
         System.out.println("order-id: " + id);
         System.out.println("product: " + product);
         System.out.println("quantity: " + quantity);

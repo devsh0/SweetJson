@@ -85,6 +85,12 @@ public class JsonElement {
     Object to_object (final Class<?> prototype) {
         if (m_as_map == null)
             throw new RuntimeException("Data objects can only be constructed from maps!");
-        return new JsonObjectAdapter(m_as_map, prototype).build_model();
+        return new JsonObjectBinder(m_as_map, prototype).build_model();
+    }
+
+    Object to_array_of (final Class<?> prototype) {
+        if (m_as_list == null)
+            throw new RuntimeException("Array objects can only be constructed from arraylists!");
+        return new JsonArrayBinder(m_as_list, prototype).build_model();
     }
 }

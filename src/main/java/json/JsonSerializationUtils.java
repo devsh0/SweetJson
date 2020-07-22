@@ -29,22 +29,21 @@ public class JsonSerializationUtils {
         return filtered;
     }
 
-    public static void set_number_field (final Object model, final Field field, final JsonElement element)
-            throws IllegalAccessException {
+    public static Object get_number_field (final JsonElement element, Class<?> klass) {
         var number = element.number();
-        var class_name = field.getType().getName().toLowerCase();
+        var class_name = klass.getName().toLowerCase();
         if (class_name.contains("byte"))
-            field.set(model, (byte) number);
+            return (byte) number;
         else if (class_name.contains("char"))
-            field.set(model, (char) number);
+            return (char) number;
         else if (class_name.contains("short"))
-            field.set(model, (short) number);
+            return (short) number;
         else if (class_name.contains("int"))
-            field.set(model, (int) number);
+            return (int) number;
         else if (class_name.contains("long"))
-            field.set(model, (long) number);
+            return (long) number;
         else if (class_name.contains("float"))
-            field.set(model, (float) number);
-        else field.set(model, number);
+            return (float) number;
+        return number;
     }
 }
