@@ -82,7 +82,7 @@ public class JsonElement {
         return m_type != Type.ARRAY && m_type != Type.OBJECT && m_type != Type.UNKNOWN;
     }
 
-    final Object to (final Class<?> prototype) {
+    final Object bind_to (final Class<?> prototype) {
         var definition = TypeDefinition.wrap(prototype);
         return SweetJson.get_binder(definition).construct(this, definition);
     }

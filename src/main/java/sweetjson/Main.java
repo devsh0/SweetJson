@@ -52,7 +52,7 @@ public class Main {
                 var model = new ArrayList<>();
                 var arg = definition.first_type_arg();
                 var list = element.arraylist();
-                list.forEach(entry -> model.add(entry.to(arg)));
+                list.forEach(entry -> model.add(entry.bind_to(arg)));
                 return model;
             }
         });
@@ -64,7 +64,7 @@ public class Main {
         register_list_binder();
         // The serializer knows how to serialize lists.
         // We're good even if `Order` includes `List`s.
-        var order = (Order)element.to(Order.class);
+        var order = (Order)element.bind_to(Order.class);
         if (order.success())
             order.print_details();
     }
