@@ -16,7 +16,7 @@ class Order {
         private String name;
         private String email;
         private String id;
-        private List<PaymentOptions> payment_options;
+        private PaymentOptions[] payment_options;
     }
 
     private User user;
@@ -61,7 +61,7 @@ public class Main {
     public static void main (String[] args) throws IOException {
         var json = Files.readString(Paths.get("test-file.json"));
         var element = JsonParser.parse(json);
-        register_list_binder();
+        //register_list_binder();
         // The serializer knows how to serialize lists.
         // We're good even if `Order` includes `List`s.
         var order = (Order)element.serialize(Order.class);

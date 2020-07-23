@@ -15,6 +15,10 @@ public class TypeDefinition {
         return m_klass;
     }
 
+    public boolean is_array() {
+        return klass().isArray();
+    }
+
     public Class<?>[] type_args () {
         return m_args;
     }
