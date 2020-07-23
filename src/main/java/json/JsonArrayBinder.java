@@ -3,6 +3,11 @@ package json;
 import java.lang.reflect.Array;
 
 public class JsonArrayBinder extends JsonBinder {
+    public static final JsonBinder INSTANCE = new JsonArrayBinder();
+
+    private JsonArrayBinder () {
+    }
+
     public Object construct (final JsonElement json_element, final TypeDefinition definition) {
         final var list = json_element.arraylist();
         final var component_type = definition.klass().componentType();
