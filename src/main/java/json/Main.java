@@ -16,7 +16,7 @@ class Order {
         private String name;
         private String email;
         private String id;
-        private List<PaymentOptions> payment_options;
+        private PaymentOptions[] payment_options;
     }
 
     private User user;
