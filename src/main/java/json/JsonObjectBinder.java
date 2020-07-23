@@ -3,7 +3,7 @@ package json;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-public class JsonObjectBinder extends AbstractBinder {
+public class JsonObjectBinder extends JsonBinder {
     // These need to be reset for each new binding request.
     private Object m_model;
     private Map<String, Field> m_serializable_fields;
@@ -13,7 +13,7 @@ public class JsonObjectBinder extends AbstractBinder {
         if (field != null) {
             field.setAccessible(true);
             var field_type = JsonSerializationUtils.get_type_definition(field);
-            var binder = AbstractBinder.get_binder(field_type);
+            var binder = JsonBinder.get_binder(field_type);
             field.set(m_model, binder.construct(element, field_type));
         }
     }

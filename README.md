@@ -41,9 +41,9 @@ public class Main {
 }
 ```
 
-Serialization is easy. The `parse` method returns a `JsonElement` which allows serializing itself to some data model
+Serialization is easy. The `parse` method returns a `JsonElement` which allows serializing itself to some model
 through the `serialize` method. If the `JsonElement` is an array type, the serializer will return an array of
-specified type wrapped in an `Object`.
+specified type wrapped in `Object`.
 
 _data.json_
 ```json
@@ -103,31 +103,32 @@ public class Main {
 }
 ```
 
-We can register our own serializers. Here we register a serializer for `ArryayList`. 
+We can register our own serializers. Here we register a serializer for `List`. 
 
 ```java
 public class Main {
-    public static void main (String[] args) throws IOException {
-        var json = Files.readString(Paths.get("test-file.json"));
-        var element = JsonParser.parse(json);
-
-        AbstractBinder.register_new(TypeDefinition.wrap(List.class), new AbstractBinder() {
-            @Override
-            public Object construct (JsonElement json_element, TypeDefinition definition) {
-                var model = new ArrayList<>();
-                var arg = definition.first_type_arg();
-                var list = json_element.arraylist();
-                for (var element : list)
-                    model.add(element.serialize(arg));
-                return model;
-            }
-        }.getClass());
-
-        // The serializer knows how to serialize lists.
-        // We're good even if `Order` includes `List`s.
-        var order = (Order)element.serialize(Order.class);
-        if (order.success())
-            order.print_details();
-    }
+    private static void register_list_binder () {
+            JsonBinder.register_new(TypeDefinition.wrap(List.class), new JsonBinder() {
+                @Override
+                public Object construct (JsonElement element, TypeDefinition definition) {
+                    var model = new ArrayList<>();
+                    var arg = definition.first_type_arg();
+                    var list = element.arraylist();
+                    list.forEach(entry -> model.add(entry.serialize(arg)));
+                    return model;
+                }
+            }.getClass());
+        }
+    
+        public static void main (String[] args) throws IOException {
+            var json = Files.readString(Paths.get("test-file.json"));
+            var element = JsonParser.parse(json);
+            register_list_binder();
+            // The serializer knows how to serialize lists.
+            // We're good even if `Order` includes `List`s.
+            var order = (Order)element.serialize(Order.class);
+            if (order.success())
+                order.print_details();
+        }
 }
 ```

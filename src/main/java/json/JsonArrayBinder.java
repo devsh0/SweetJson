@@ -2,7 +2,7 @@ package json;
 
 import java.lang.reflect.Array;
 
-public class JsonArrayBinder extends AbstractBinder {
+public class JsonArrayBinder extends JsonBinder {
     public Object construct (final JsonElement json_element, final TypeDefinition definition) {
         final var list = json_element.arraylist();
         final var component_type = definition.klass().componentType();

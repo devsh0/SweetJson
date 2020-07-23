@@ -46,7 +46,7 @@ class Order {
 
 public class Main {
     private static void register_list_binder () {
-        AbstractBinder.register_new(TypeDefinition.wrap(List.class), new AbstractBinder() {
+        JsonBinder.register_new(TypeDefinition.wrap(List.class), new JsonBinder() {
             @Override
             public Object construct (JsonElement element, TypeDefinition definition) {
                 var model = new ArrayList<>();

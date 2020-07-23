@@ -33,7 +33,7 @@ public class TypeDefinition {
 
     @Override
     public int hashCode () {
-        return m_id.hashCode();
+        return m_id.hashCode() + 888;
     }
 
     @Override

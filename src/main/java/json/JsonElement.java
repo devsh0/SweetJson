@@ -85,6 +85,6 @@ public class JsonElement {
     final Object serialize (Class<?> prototype) {
         prototype = m_type == Type.ARRAY ? prototype.arrayType() : prototype;
         var definition = new TypeDefinition(prototype);
-        return AbstractBinder.get_binder(definition).construct(this, definition);
+        return JsonBinder.get_binder(definition).construct(this, definition);
     }
 }
