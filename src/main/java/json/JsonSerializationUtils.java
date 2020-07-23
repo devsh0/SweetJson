@@ -60,14 +60,4 @@ public class JsonSerializationUtils {
             args[i] = (Class<?>) type_args[i];
         return new TypeDefinition(klass, args);
     }
-
-    public static Object get_primitive (final JsonElement element, final Class<?> prototype) {
-        return switch (element.get_type()) {
-            case STRING -> element.string();
-            case NUMBER -> JsonSerializationUtils.get_number_field(element, prototype);
-            case BOOL -> element.bool();
-            case NULL -> null;
-            default -> throw new RuntimeException("Attempted to construct primitive from non-primitive value!");
-        };
-    }
 }

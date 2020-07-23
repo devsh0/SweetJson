@@ -8,16 +8,13 @@ public class JsonArrayBinder extends JsonBinder {
     private JsonArrayBinder () {
     }
 
-    public Object construct (final JsonElement json_element, final TypeDefinition definition) {
-        final var list = json_element.arraylist();
+    public Object construct (final JsonElement element, final TypeDefinition definition) {
+        final var list = element.arraylist();
+        final var size = list.size();
         final var component_type = definition.klass().componentType();
-        final var model = Array.newInstance(component_type, list.size());
-        for (int i = 0; i < list.size(); i++) {
-            var element = list.get(i);
-            if (element.is_primitive())
-                Array.set(model, i, JsonSerializationUtils.get_primitive(element, component_type));
-            else Array.set(model, i, list.get(i).serialize(component_type));
-        }
+        final var model = Array.newInstance(component_type, size);
+        for (int i = 0; i < size; i++)
+            Array.set(model, i, list.get(i).serialize(component_type));
         return model;
     }
 }

@@ -3,8 +3,7 @@ package json;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 class Order {
     static class PaymentOptions {
@@ -16,7 +15,7 @@ class Order {
         private String name;
         private String email;
         private String id;
-        private PaymentOptions[] payment_options;
+        private List<PaymentOptions> payment_options;
     }
 
     private User user;
@@ -45,6 +44,7 @@ class Order {
 }
 
 public class Main {
+
     private static void register_list_binder () {
         JsonBinder.register_new(TypeDefinition.wrap(List.class), new JsonBinder() {
             @Override

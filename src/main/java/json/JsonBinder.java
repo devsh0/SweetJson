@@ -14,6 +14,8 @@ public abstract class JsonBinder {
 
     public static JsonBinder get_binder (final TypeDefinition type) {
         var binder = CUSTOM_BINDERS.get(type);
-        return (binder == null) ? (type.is_array() ? JsonArrayBinder.INSTANCE : JsonObjectBinder.INSTANCE) : binder;
+        if (binder != null) return binder;
+        return type.is_json_primitive() ? JsonPrimitiveBinder.INSTANCE
+                : (type.is_array() ? JsonArrayBinder.INSTANCE : JsonObjectBinder.INSTANCE);
     }
 }

@@ -6,7 +6,7 @@ public class TypeDefinition {
     private final Class<?>[] m_args;
 
     public TypeDefinition (final Class<?> klass, Class<?>... args) {
-        m_id = klass.getCanonicalName();
+        m_id = klass.getCanonicalName().toLowerCase();
         m_klass = klass;
         m_args = args;
     }
@@ -15,8 +15,25 @@ public class TypeDefinition {
         return m_klass;
     }
 
-    public boolean is_array() {
+    public boolean is_array () {
         return klass().isArray();
+    }
+
+    public boolean is_json_primitive () {
+        var name = m_klass.getCanonicalName();
+        if (m_klass.isPrimitive()) return true;
+        switch (name) {
+            case "java.lang.String":
+            case "java.lang.Byte":
+            case "java.lang.Short":
+            case "java.lang.Character":
+            case "java.lang.Integer":
+            case "java.lang.Long":
+            case "java.lang.Float":
+            case "java.lang.Double":
+                return true;
+            default: return false;
+        }
     }
 
     public Class<?>[] type_args () {
