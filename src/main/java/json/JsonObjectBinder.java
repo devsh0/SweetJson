@@ -8,7 +8,7 @@ public class JsonObjectBinder extends JsonBinder {
     public Object construct (final JsonElement element, final TypeDefinition definition) {
         try {
             Map<String, JsonElement> m_map = element.map();
-            var model = JsonSerializationUtils.create_instance(definition.klass());
+            var model = definition.create_instance();
             var serializable_fields = JsonSerializationUtils.get_serializable_fields(definition.klass());
 
             for (var entry : m_map.entrySet()) {

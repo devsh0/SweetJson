@@ -1,14 +1,16 @@
 package json;
 
+import java.lang.reflect.InvocationTargetException;
+
 public class TypeDefinition {
     private final String m_id;
     private final Class<?> m_klass;
-    private final Class<?>[] m_args;
+    private final Class<?>[] m_type_args;
 
-    public TypeDefinition (final Class<?> klass, Class<?>... args) {
+    private TypeDefinition (final Class<?> klass, Class<?>... args) {
         m_id = klass.getCanonicalName().toLowerCase();
         m_klass = klass;
-        m_args = args;
+        m_type_args = args;
     }
 
     public Class<?> klass () {
@@ -37,19 +39,19 @@ public class TypeDefinition {
     }
 
     public Class<?>[] type_args () {
-        return m_args;
+        return m_type_args;
     }
 
     public Class<?> first_type_arg () {
-        return m_args[0];
+        return m_type_args[0];
     }
 
     public Class<?> second_type_arg () {
-        return m_args[1];
+        return m_type_args[1];
     }
 
     public boolean has_type_args () {
-        return m_args != null;
+        return m_type_args != null;
     }
 
     @Override
@@ -65,7 +67,18 @@ public class TypeDefinition {
         return other_type.m_id.equals(m_id);
     }
 
-    public static TypeDefinition wrap (final Class<?> klass) {
-        return new TypeDefinition(klass);
+    public Object create_instance () {
+        try {
+            return klass().getDeclaredConstructor().newInstance();
+        } catch (NoSuchMethodException
+                | InstantiationException
+                | IllegalAccessException
+                | InvocationTargetException exc) {
+            throw new RuntimeException(exc);
+        }
+    }
+
+    public static TypeDefinition wrap (final Class<?> klass, Class<?>... type_args) {
+        return new TypeDefinition(klass, type_args);
     }
 }
