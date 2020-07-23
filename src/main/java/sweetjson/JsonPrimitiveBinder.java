@@ -1,6 +1,6 @@
-package json;
+package sweetjson;
 
-public class JsonPrimitiveBinder extends JsonBinder {
+public class JsonPrimitiveBinder implements JsonBinder {
     public static final JsonBinder INSTANCE = new JsonPrimitiveBinder();
 
     @Override

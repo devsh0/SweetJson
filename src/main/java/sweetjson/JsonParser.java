@@ -1,4 +1,4 @@
-package json;
+package sweetjson;
 
 import java.io.*;
 import java.nio.file.Files;

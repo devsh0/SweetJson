@@ -1,10 +1,10 @@
-package json;
+package sweetjson;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-public class State {
+public class StackFrame {
     private final Stack<Map<String, Object>> m_stack = new Stack<>();
 
     public void put (final String key, final Object value) {

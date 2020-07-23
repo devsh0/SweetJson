@@ -1,8 +1,8 @@
-package json;
+package sweetjson;
 
 import java.util.Map;
 
-public class JsonObjectBinder extends JsonBinder {
+public class JsonObjectBinder implements JsonBinder {
     public static final JsonBinder INSTANCE = new JsonObjectBinder();
 
     public Object construct (final JsonElement element, final TypeDefinition definition) {
@@ -16,7 +16,7 @@ public class JsonObjectBinder extends JsonBinder {
                 if (field != null) {
                     field.setAccessible(true);
                     var field_type = JsonSerializationUtils.get_type_definition(field);
-                    var binder = JsonBinder.get_binder(field_type);
+                    var binder = SweetJson.get_binder(field_type);
                     field.set(model, binder.construct(entry.getValue(), field_type));
                 }
             }

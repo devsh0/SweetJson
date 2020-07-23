@@ -1,4 +1,4 @@
-package json;
+package sweetjson;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -22,20 +22,15 @@ public class TypeDefinition {
     }
 
     public boolean is_json_primitive () {
-        var name = m_klass.getCanonicalName();
         if (m_klass.isPrimitive()) return true;
-        switch (name) {
-            case "java.lang.String":
-            case "java.lang.Byte":
-            case "java.lang.Short":
-            case "java.lang.Character":
-            case "java.lang.Integer":
-            case "java.lang.Long":
-            case "java.lang.Float":
-            case "java.lang.Double":
-                return true;
-            default: return false;
-        }
+        return m_klass == String.class
+                || m_klass == Byte.class
+                || m_klass == Short.class
+                || m_klass == Character.class
+                || m_klass == Integer.class
+                || m_klass == Long.class
+                || m_klass == Float.class
+                || m_klass == Double.class;
     }
 
     public Class<?>[] type_args () {

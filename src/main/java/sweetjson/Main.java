@@ -1,4 +1,4 @@
-package json;
+package sweetjson;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -46,13 +46,13 @@ class Order {
 public class Main {
 
     private static void register_list_binder () {
-        JsonBinder.register_new(TypeDefinition.wrap(List.class), new JsonBinder() {
+        SweetJson.register_binder(TypeDefinition.wrap(List.class), new JsonBinder() {
             @Override
             public Object construct (JsonElement element, TypeDefinition definition) {
                 var model = new ArrayList<>();
                 var arg = definition.first_type_arg();
                 var list = element.arraylist();
-                list.forEach(entry -> model.add(entry.serialize(arg)));
+                list.forEach(entry -> model.add(entry.to(arg)));
                 return model;
             }
         });
@@ -64,7 +64,7 @@ public class Main {
         register_list_binder();
         // The serializer knows how to serialize lists.
         // We're good even if `Order` includes `List`s.
-        var order = (Order)element.serialize(Order.class);
+        var order = (Order)element.to(Order.class);
         if (order.success())
             order.print_details();
     }

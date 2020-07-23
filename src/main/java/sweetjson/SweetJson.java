@@ -1,14 +1,12 @@
-package json;
+package sweetjson;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class JsonBinder {
+public class SweetJson {
     private static final Map<TypeDefinition, JsonBinder> CUSTOM_BINDERS = new HashMap<>();
 
-    public abstract Object construct (final JsonElement element, final TypeDefinition definition);
-
-    public static void register_new (final TypeDefinition definition, final JsonBinder binder) {
+    public static void register_binder (final TypeDefinition definition, final JsonBinder binder) {
         CUSTOM_BINDERS.put(definition, binder);
     }
 

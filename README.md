@@ -6,7 +6,7 @@
 
 ### Usage
 _data.json_
-```json
+```sweetjson
 {
   "people": [
     {
@@ -29,8 +29,8 @@ _Main.java_
 ```java
 public class Main {
     public static void main(String[] args){
-      var json = JsonParser.parse(Paths.get("data.json")).map(); // get data as map
-      for (JsonElement json_element : json.get("people").arryalist()) {
+      var sweetjson = JsonParser.parse(Paths.get("data.sweetjson")).map(); // get data as map
+      for (JsonElement json_element : sweetjson.get("people").arryalist()) {
           var person = json_element.map();
           var firstname = person.get("firstname").string();
           var lastname = person.get("lastname").string();
@@ -46,7 +46,7 @@ through the `serialize` method. If the `JsonElement` is an array type, the seria
 specified type wrapped in `Object`.
 
 _data.json_
-```json
+```sweetjson
 {
   "user": {
     "name": "John Doe",
@@ -95,8 +95,8 @@ class Order {
 
 public class Main {
     public static void main (String[] args) throws IOException {
-        var json = Files.readString(Paths.get("data.json"));
-        var order = (Order)JsonParser.parse(json).serialize(Order.class);
+        var sweetjson = Files.readString(Paths.get("data.sweetjson"));
+        var order = (Order)JsonParser.parse(sweetjson).serialize(Order.class);
         if (order.success())
             order.print_details();
     }
@@ -121,8 +121,8 @@ public class Main {
         }
     
         public static void main (String[] args) throws IOException {
-            var json = Files.readString(Paths.get("test-file.json"));
-            var element = JsonParser.parse(json);
+            var sweetjson = Files.readString(Paths.get("test-file.sweetjson"));
+            var element = JsonParser.parse(sweetjson);
             register_list_binder();
             // The serializer knows how to serialize lists.
             // We're good even if `Order` includes `List`s.

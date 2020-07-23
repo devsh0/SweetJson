@@ -1,4 +1,4 @@
-package json;
+package sweetjson;
 
 import java.util.List;
 import java.util.Map;
@@ -82,8 +82,8 @@ public class JsonElement {
         return m_type != Type.ARRAY && m_type != Type.OBJECT && m_type != Type.UNKNOWN;
     }
 
-    final Object serialize (Class<?> prototype) {
+    final Object to (final Class<?> prototype) {
         var definition = TypeDefinition.wrap(prototype);
-        return JsonBinder.get_binder(definition).construct(this, definition);
+        return SweetJson.get_binder(definition).construct(this, definition);
     }
 }
