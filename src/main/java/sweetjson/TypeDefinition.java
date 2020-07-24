@@ -7,10 +7,31 @@ public class TypeDefinition {
     private final Class<?> m_klass;
     private final Class<?>[] m_type_args;
 
-    private TypeDefinition (final Class<?> klass, Class<?>... args) {
+    public static class Builder {
+        private Class<?> m_klass;
+        private Class<?>[] m_type_args;
+
+        public Builder set_klass (final Class<?> klass) {
+            m_klass = klass;
+            return this;
+        }
+
+        public Builder set_type_args (final Class<?>... type_args) {
+            m_type_args = type_args == null ? new Class<?>[]{} : type_args;
+            return this;
+        }
+
+        public TypeDefinition build () {
+            if (m_klass == null)
+                throw new RuntimeException("No klass specified!");
+            return new TypeDefinition(m_klass, m_type_args);
+        }
+    }
+
+    private TypeDefinition (final Class<?> klass, final Class<?>[] type_args) {
         m_id = klass.getCanonicalName().toLowerCase();
         m_klass = klass;
-        m_type_args = args;
+        m_type_args = type_args;
     }
 
     public Class<?> klass () {
@@ -46,7 +67,7 @@ public class TypeDefinition {
     }
 
     public boolean has_type_args () {
-        return m_type_args != null;
+        return m_type_args.length > 0;
     }
 
     @Override
@@ -73,7 +94,11 @@ public class TypeDefinition {
         }
     }
 
-    public static TypeDefinition wrap (final Class<?> klass, Class<?>... type_args) {
-        return new TypeDefinition(klass, type_args);
+    public static TypeDefinition wrap (final Class<?> klass) {
+        return new TypeDefinition(klass, new Class<?>[]{});
+    }
+
+    public static Builder builder () {
+        return new Builder();
     }
 }

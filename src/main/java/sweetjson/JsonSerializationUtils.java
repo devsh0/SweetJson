@@ -46,6 +46,6 @@ public class JsonSerializationUtils {
         Class<?>[] args = new Class<?>[type_args.length];
         for (int i = 0; i < args.length; i++)
             args[i] = (Class<?>) type_args[i];
-        return TypeDefinition.wrap(klass, args);
+        return TypeDefinition.builder().set_klass(klass).set_type_args(args).build();
     }
 }
