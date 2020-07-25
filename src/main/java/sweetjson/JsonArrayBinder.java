@@ -8,7 +8,7 @@ public class JsonArrayBinder implements JsonBinder {
     private JsonArrayBinder () {
     }
 
-    public Object construct (final JsonElement element, final TypeDefinition definition) {
+    public Object construct (final JsonElement element, final Typedef definition) {
         final var list = element.arraylist();
         final var size = list.size();
         final var component_type = definition.klass().componentType();

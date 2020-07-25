@@ -2,7 +2,7 @@ package sweetjson;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class TypeDefinition {
+public class Typedef {
     private final String m_id;
     private final Class<?> m_klass;
     private final Class<?>[] m_type_args;
@@ -21,14 +21,14 @@ public class TypeDefinition {
             return this;
         }
 
-        public TypeDefinition build () {
+        public Typedef build () {
             if (m_klass == null)
                 throw new RuntimeException("No klass specified!");
-            return new TypeDefinition(m_klass, m_type_args);
+            return new Typedef(m_klass, m_type_args);
         }
     }
 
-    private TypeDefinition (final Class<?> klass, final Class<?>[] type_args) {
+    private Typedef (final Class<?> klass, final Class<?>[] type_args) {
         m_id = klass.getCanonicalName().toLowerCase();
         m_klass = klass;
         m_type_args = type_args;
@@ -77,9 +77,9 @@ public class TypeDefinition {
 
     @Override
     public boolean equals (final Object other) {
-        if (!(other instanceof TypeDefinition))
+        if (!(other instanceof Typedef))
             return false;
-        var other_type = (TypeDefinition) other;
+        var other_type = (Typedef) other;
         return other_type.m_id.equals(m_id);
     }
 
@@ -94,8 +94,8 @@ public class TypeDefinition {
         }
     }
 
-    public static TypeDefinition wrap (final Class<?> klass) {
-        return new TypeDefinition(klass, new Class<?>[]{});
+    public static Typedef wrap (final Class<?> klass) {
+        return new Typedef(klass, new Class<?>[]{});
     }
 
     public static Builder builder () {

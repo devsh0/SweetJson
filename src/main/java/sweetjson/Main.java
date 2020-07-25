@@ -46,11 +46,11 @@ class Order {
 public class Main {
 
     private static void register_list_binder () {
-        SweetJson.register_binder(TypeDefinition.wrap(List.class), new JsonBinder() {
+        SweetJson.register_binder(Typedef.wrap(List.class), new JsonBinder() {
             @Override
-            public Object construct (JsonElement element, TypeDefinition definition) {
+            public Object construct (JsonElement element, Typedef type) {
                 var model = new ArrayList<>();
-                var arg = definition.first_type_arg();
+                var arg = type.first_type_arg();
                 var list = element.arraylist();
                 list.forEach(entry -> model.add(entry.bind_to(arg)));
                 return model;

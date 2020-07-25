@@ -4,7 +4,7 @@ public class JsonPrimitiveBinder implements JsonBinder {
     public static final JsonBinder INSTANCE = new JsonPrimitiveBinder();
 
     @Override
-    public Object construct (JsonElement element, TypeDefinition definition) {
+    public Object construct (JsonElement element, Typedef definition) {
         var type = element.get_type();
         return switch (type) {
             case STRING -> element.string();

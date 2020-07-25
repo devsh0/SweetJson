@@ -5,7 +5,7 @@ import java.util.Map;
 public class JsonObjectBinder implements JsonBinder {
     public static final JsonBinder INSTANCE = new JsonObjectBinder();
 
-    public Object construct (final JsonElement element, final TypeDefinition definition) {
+    public Object construct (final JsonElement element, final Typedef definition) {
         try {
             Map<String, JsonElement> m_map = element.map();
             var model = definition.create_instance();
@@ -15,7 +15,7 @@ public class JsonObjectBinder implements JsonBinder {
                 var field = serializable_fields.get(entry.getKey());
                 if (field != null) {
                     field.setAccessible(true);
-                    var field_type = JsonSerializationUtils.get_type_definition(field);
+                    var field_type = JsonSerializationUtils.get_typedef(field);
                     var binder = SweetJson.get_binder(field_type);
                     field.set(model, binder.construct(entry.getValue(), field_type));
                 }

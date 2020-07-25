@@ -2,5 +2,5 @@ package sweetjson;
 
 @FunctionalInterface
 public interface JsonBinder {
-    Object construct (final JsonElement element, final TypeDefinition definition);
+    Object construct (final JsonElement element, final Typedef definition);
 }

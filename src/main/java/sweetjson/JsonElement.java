@@ -83,7 +83,7 @@ public class JsonElement {
     }
 
     final Object bind_to (final Class<?> prototype) {
-        var definition = TypeDefinition.wrap(prototype);
+        var definition = Typedef.wrap(prototype);
         return SweetJson.get_binder(definition).construct(this, definition);
     }
 }
