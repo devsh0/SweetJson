@@ -2,6 +2,7 @@ package sweetjson;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @SuppressWarnings("unchecked")
 public class JsonElement {
@@ -84,6 +85,11 @@ public class JsonElement {
 
     final Object bind_to (final Class<?> prototype) {
         var definition = Typedef.wrap(prototype);
-        return SweetJson.get_binder(definition).construct(this, definition);
+        return SweetJson.get_binder(definition).construct(this, definition, Bag.empty());
+    }
+
+    final Object bind_to (final Class<?> prototype, final Bag bag) {
+        var definition = Typedef.wrap(prototype);
+        return SweetJson.get_binder(definition).construct(this, definition, Objects.requireNonNull(bag));
     }
 }

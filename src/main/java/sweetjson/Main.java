@@ -48,11 +48,11 @@ public class Main {
     private static void register_list_binder () {
         SweetJson.register_binder(Typedef.wrap(List.class), new JsonBinder() {
             @Override
-            public Object construct (JsonElement element, Typedef type) {
+            public Object construct (JsonElement element, Typedef type, Bag bag) {
                 var model = new ArrayList<>();
                 var arg = type.first_type_arg();
                 var list = element.arraylist();
-                list.forEach(entry -> model.add(entry.bind_to(arg)));
+                list.forEach(entry -> model.add(entry.bind_to(arg, bag)));
                 return model;
             }
         });
