@@ -1,8 +1,9 @@
-### Features
-- Super naive.
+Started writing this to overcome boredom but since I'm having fun, I look forward to keep improving it over time. 
+
+### State of this project
+- Development in progress.
 - Only 90% compliant with the specs.
 - Serialization not supported yet.
-- Written to overcome boredom.
 
 ### Usage
 _data.json_
@@ -44,7 +45,7 @@ public class Main {
 ```
 
 Data binding is easy. The `parse` method returns a `JsonElement` which can be mapped to a data model by calling
-the `bind_to` method on `JsonElement`.
+the `bind_to` method on `JsonElement`. Partial bindings are also supported.
 
 _data.json_
 ```json
@@ -72,24 +73,22 @@ public class Main {
 }
 ```
 
-Primitive types as well as non-parameterized types and arrays are supported. Note that custom annotations aren't
-required. The binder will write values to fields whose name corresponds to fields in the JSON string. Furthermore, 
-the writer will leave out transient and inherited fields. If a JSON field is set to `null`, the binder will throw
-if the corresponding field is primitive. Extra fields in the JSON string are simply skipped if there are no members
-corresponding to that key.
+Primitive types as well as parameterized and array types are supported. Note that custom annotations aren't
+required (will be added in the future, hopefully soon). The binder will write values to fields whose name
+corresponds to fields in the JSON string. Furthermore, the writer will leave out transient and inherited fields.
+If a JSON field is set to `null`, the binder will throw if the corresponding field is primitive. Extra fields in
+the JSON string are simply skipped if there are no members corresponding to that key.
 
 We can specify custom binders to handle mapping to objects of types that do not conform to the structure of JSON
 data:
 
 ```java
 public class Main {
-    // Register a binder for `java.util.List`. We can, if we want, specify type arguments
-    // but as of now, that has no affect. From here on, the binder will treat all `List`s
-    // the same. This limitation will go away soon.
+    // Register a binder for `java.util.List`.
     private static void register_list_binder () {
         SweetJson.register_binder(TypeDefinition.wrap(List.class), new JsonBinder() {
             @Override
-            public Object construct (JsonElement element, TypeDefinition definition) {
+            public Object construct (JsonElement element, TypeDefinition definition, Bag bag) {
                 var model = new ArrayList<>();
                 var arg = definition.first_type_arg();
                 var list = element.arraylist();
@@ -110,3 +109,51 @@ public class Main {
 ```
 Here we are hardcoding `ArrayList` as the container. If that's not acceptable, you'll need to register more
 specific types. That also means that you have to use specific types while declaring variables (so not cool).
+
+### Generic Types
+
+`SweetJson` provides basic support for deserializing generic types. Here's a (bad) example:
+
+```json
+{
+  "user": {
+    "name": "John Doe",
+    "alias": "doejohn",
+    "email": "johndoes@anonymous.com"
+  }
+}
+```
+
+```java
+class Employee {
+    private String name;
+    private String alias;
+    private String email;
+
+    public void print_alias () {
+        System.out.println(alias);
+    }
+}
+
+class Server <T> {
+    private T user;
+    private transient Connection handle;
+    // ...more fields
+    
+    public T get_user() {
+        return user;
+    }
+}
+
+public class Main {
+    public static void main (String[] args) {
+        var server = (Server<Employee>)JsonParser
+                            .parse(args[0])
+                            .bind_to_generic(Server.class, Employee.class); // Prototype.class, Typearg1.class...TypeargN.class
+        System.out.println(server.get_user().print_alias();) // Prints "doejohn"
+    }
+}
+```
+
+**Note: Documentation is updated from time to time as the development proceeds. But the README usually won't
+reflect the latest API changes.**

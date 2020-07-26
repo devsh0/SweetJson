@@ -43,7 +43,7 @@ public class JsonElement {
 
     private void verify_type_or_throw (final Type type, final String type_str) {
         if (m_type != type)
-            throw new RuntimeException("Cannot convert value to " + type_str + "!");
+            throw new RuntimeException("Cannot convert `" + this.m_type + "` to " + type_str + "!");
     }
 
     final List<JsonElement> arraylist () {
