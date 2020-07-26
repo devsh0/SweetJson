@@ -15,7 +15,7 @@ public class JsonObjectBinder implements JsonBinder {
                 var field = serializable_fields.get(entry.getKey());
                 if (field != null) {
                     field.setAccessible(true);
-                    var field_type = JsonSerializationUtils.get_typedef(field);
+                    var field_type = JsonSerializationUtils.get_field_typedef(field, definition);
                     var binder = SweetJson.get_binder(field_type);
                     field.set(model, binder.construct(entry.getValue(), field_type, bag));
                 }

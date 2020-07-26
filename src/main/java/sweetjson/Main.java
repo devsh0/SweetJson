@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-class Order {
+class Order<T> {
     static class PaymentOptions {
         private String name;
         private double limit;
@@ -18,6 +18,7 @@ class Order {
         private List<PaymentOptions> payment_options;
     }
 
+    private List<String> something;
     private User user;
     private String id;
     private String product;
@@ -25,7 +26,8 @@ class Order {
     private double price;
     private boolean success;
 
-    void print_details() {
+    void print_details () {
+        System.out.println("something: " + something.get(0));
         System.out.println("user-id: " + user.id);
         System.out.println("user-name: " + user.name);
         System.out.println("user-email: " + user.email);
@@ -38,7 +40,7 @@ class Order {
         System.out.println("status: " + (success ? "succeeded" : "failed"));
     }
 
-    boolean success() {
+    boolean success () {
         return success;
     }
 }
@@ -58,13 +60,14 @@ public class Main {
         });
     }
 
+    @SuppressWarnings("unchecked")
     public static void main (String[] args) throws IOException {
         var json = Files.readString(Paths.get("test-file.json"));
         var element = JsonParser.parse(json);
         register_list_binder();
         // The serializer knows how to serialize lists.
         // We're good even if `Order` includes `List`s.
-        var order = (Order)element.bind_to(Order.class);
+        var order = (Order<String>) element.bind_to_generic(Order.class, String.class);
         if (order.success())
             order.print_details();
     }

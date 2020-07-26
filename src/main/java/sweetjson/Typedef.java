@@ -1,37 +1,42 @@
 package sweetjson;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Typedef {
     private final String m_id;
     private final Class<?> m_klass;
     private final Class<?>[] m_type_args;
+    private boolean m_is_generic_type;
+    private final Map<String, Class<?>> m_type_parameter_map = new HashMap<>();
 
-    public static class Builder {
-        private Class<?> m_klass;
-        private Class<?>[] m_type_args;
-
-        public Builder set_klass (final Class<?> klass) {
-            m_klass = klass;
-            return this;
-        }
-
-        public Builder set_type_args (final Class<?>... type_args) {
-            m_type_args = type_args == null ? new Class<?>[]{} : type_args;
-            return this;
-        }
-
-        public Typedef build () {
-            if (m_klass == null)
-                throw new RuntimeException("No klass specified!");
-            return new Typedef(m_klass, m_type_args);
+    private Typedef (final Class<?> klass, final Class<?>[] type_arguments) {
+        m_id = klass.getCanonicalName().toLowerCase();
+        m_klass = klass;
+        m_type_args = type_arguments;
+        if (klass.toGenericString().contains("<") && type_arguments.length > 0) {
+            m_is_generic_type = true;
+            associate_type_arguments();
         }
     }
 
-    private Typedef (final Class<?> klass, final Class<?>[] type_args) {
-        m_id = klass.getCanonicalName().toLowerCase();
-        m_klass = klass;
-        m_type_args = type_args;
+    private void associate_type_arguments () {
+        var gstring = klass().toGenericString();
+        var type_parameters_str = gstring.substring(gstring.indexOf("<"))
+                .replace("<", "")
+                .replace(">", "")
+                .replaceAll("\\s","");
+        var type_parameters = type_parameters_str.split(",");
+        if (m_type_args.length != type_parameters.length) {
+            final var format = "Too few/many type arguments (expected: %d, supplied: %d)!";
+            throw new RuntimeException(String.format(format, type_parameters.length, m_type_args.length));
+        }
+        for (int i = 0; i < type_parameters.length; i++) {
+            m_type_parameter_map.put(type_parameters[i], m_type_args[i]);
+            m_type_parameter_map.put(type_parameters[i] + "[]", m_type_args[i].arrayType());
+        }
     }
 
     public Class<?> klass () {
@@ -58,6 +63,14 @@ public class Typedef {
         return m_type_args;
     }
 
+    public boolean has_type_argument_mapping (final String type_parameter) {
+        return m_type_parameter_map.containsKey(type_parameter);
+    }
+
+    public Class<?> get_type_argument (final String type_parameter) {
+        return m_type_parameter_map.get(type_parameter);
+    }
+
     public Class<?> first_type_arg () {
         return m_type_args[0];
     }
@@ -68,6 +81,10 @@ public class Typedef {
 
     public boolean has_type_args () {
         return m_type_args.length > 0;
+    }
+
+    public boolean is_generic_type () {
+        return m_is_generic_type;
     }
 
     @Override
@@ -91,6 +108,27 @@ public class Typedef {
                 | IllegalAccessException
                 | InvocationTargetException exc) {
             throw new RuntimeException(exc);
+        }
+    }
+
+    public static class Builder {
+        private Class<?> m_klass;
+        private Class<?>[] m_type_args;
+
+        public Builder set_klass (final Class<?> klass) {
+            m_klass = klass;
+            return this;
+        }
+
+        public Builder set_type_args (final Class<?>... type_args) {
+            m_type_args = type_args == null ? new Class<?>[]{} : type_args;
+            return this;
+        }
+
+        public Typedef build () {
+            if (m_klass == null)
+                throw new RuntimeException("No klass specified!");
+            return new Typedef(m_klass, m_type_args);
         }
     }
 

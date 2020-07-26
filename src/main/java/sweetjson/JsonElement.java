@@ -92,4 +92,12 @@ public class JsonElement {
         var definition = Typedef.wrap(prototype);
         return SweetJson.get_binder(definition).construct(this, definition, Objects.requireNonNull(bag));
     }
+
+    final Object bind_to_generic (final Class<?> prototype, Class<?>... type_args) {
+        var definition = Typedef.builder()
+                .set_klass(prototype)
+                .set_type_args(type_args)
+                .build();
+        return SweetJson.get_binder(definition).construct(this, definition, Bag.empty());
+    }
 }

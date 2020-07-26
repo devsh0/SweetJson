@@ -1,4 +1,5 @@
 {
+  "something": ["I am something", "I am something else"],
   "user": {
     "name": "John Doe",
     "email": "johndoe@example.com",
