@@ -91,10 +91,9 @@ public class JsonParser {
                 throw new RuntimeException("Invalid parser state!");
 
             m_depth--;
-            if (m_depth == 0) {
+            if (m_depth == 0)
                 m_state = ParserState.ENDED;
-                return;
-            }
+            return;
         }
 
         throw new RuntimeException("Invalid parser state!");
