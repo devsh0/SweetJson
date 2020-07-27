@@ -31,23 +31,23 @@ class JsonParserTest {
     void test_parsing_object () {
         var json = parser("{}").parse();
         assertEquals(json.get_type(), JsonElement.JsonType.OBJECT);
-        assertTrue(json.map().isEmpty());
+        assertTrue(json.as_map().isEmpty());
 
         json = parser("{\"a\": \"b\"}").parse();
-        assertEquals("b", json.map().get("a").string());
+        assertEquals("b", json.as_map().get("a").as_string());
     }
 
     @Test
     void test_parsing_array () {
         var json = parser("[]").parse();
         assertEquals(json.get_type(), JsonElement.JsonType.ARRAY);
-        assertTrue(json.arraylist().isEmpty());
+        assertTrue(json.as_list().isEmpty());
 
         json = parser("[1, 2]").parse();
-        var alist = json.arraylist();
+        var alist = json.as_list();
         assertEquals(2, alist.size());
-        assertEquals(alist.get(0).number(), 1);
-        assertEquals(alist.get(1).number(), 2);
+        assertEquals(alist.get(0).as_double(), 1);
+        assertEquals(alist.get(1).as_double(), 2);
     }
 
     @Test
@@ -56,17 +56,17 @@ class JsonParserTest {
     // This will be improved in the future.
     void test_parsing_string () {
         var json = parser("{\"string\": \"some string\"}").parse();
-        assertEquals("some string", json.map().get("string").string());
+        assertEquals("some string", json.as_map().get("string").as_string());
 
         json = parser("{\"string_with_escapes\": \"some\\\"things\\n\\\"\"}").parse();
-        System.out.println(json.map().get("string_with_escapes").string());
-        assertEquals("some\\\"things\\n\\\"", json.map().get("string_with_escapes").string());
+        System.out.println(json.as_map().get("string_with_escapes").as_string());
+        assertEquals("some\\\"things\\n\\\"", json.as_map().get("string_with_escapes").as_string());
     }
 
     @Test
     void test_parsing_null () {
         var json = parser("{\"null\": null}").parse();
-        assertNull(json.map().get("null").object());
+        assertNull(json.as_map().get("null").as_object());
     }
 
     @Test
@@ -86,16 +86,16 @@ class JsonParserTest {
                 + "2.2250738585072014E-308,"
                 + "3.141592653589793,"
                 + "2.718281828459045]";
-        var list = parser(json).parse().arraylist();
-        assertEquals(-0.0, list.get(0).number());
-        assertEquals(1.0, list.get(1).number());
-        assertEquals(1.7976931348623157E308, list.get(2).number());
-        assertEquals(4.9E-324, list.get(3).number());
-        assertEquals(0.0, list.get(4).number());
-        assertEquals(-0.5, list.get(5).number());
-        assertEquals(2.2250738585072014E-308, list.get(6).number());
-        assertEquals(3.141592653589793, list.get(7).number());
-        assertEquals(2.718281828459045, list.get(8).number());
+        var list = parser(json).parse().as_list();
+        assertEquals(-0.0, list.get(0).as_double());
+        assertEquals(1.0, list.get(1).as_double());
+        assertEquals(1.7976931348623157E308, list.get(2).as_double());
+        assertEquals(4.9E-324, list.get(3).as_double());
+        assertEquals(0.0, list.get(4).as_double());
+        assertEquals(-0.5, list.get(5).as_double());
+        assertEquals(2.2250738585072014E-308, list.get(6).as_double());
+        assertEquals(3.141592653589793, list.get(7).as_double());
+        assertEquals(2.718281828459045, list.get(8).as_double());
     }
 
     @Test
@@ -105,25 +105,25 @@ class JsonParserTest {
                 + "-1,-1,-1,"
                 + "-9223372036854775808,"
                 + "9223372036854775807]";
-        var list = parser(json).parse().arraylist();
-        assertEquals(0L, list.get(0).number());
-        assertEquals(0, list.get(1).number());
-        assertEquals(0.0, list.get(2).number());
-        assertEquals(1L, list.get(3).number());
-        assertEquals(1, list.get(4).number());
-        assertEquals(1.0, list.get(5).number());
-        assertEquals(-1L, list.get(6).number());
-        assertEquals(-1, list.get(7).number());
-        assertEquals(-1.0, list.get(8).number());
-        assertEquals(Long.MIN_VALUE, list.get(9).number());
-        assertEquals(Long.MAX_VALUE, list.get(10).number());
+        var list = parser(json).parse().as_list();
+        assertEquals(0L, list.get(0).as_long());
+        assertEquals(0, list.get(1).as_long());
+        assertEquals(0.0, list.get(2).as_long());
+        assertEquals(1L, list.get(3).as_long());
+        assertEquals(1, list.get(4).as_long());
+        assertEquals(1.0, list.get(5).as_long());
+        assertEquals(-1L, list.get(6).as_long());
+        assertEquals(-1, list.get(7).as_long());
+        assertEquals(-1.0, list.get(8).as_long());
+        assertEquals(Long.MIN_VALUE, list.get(9).as_long());
+        assertEquals(Long.MAX_VALUE, list.get(10).as_long());
     }
 
     @Test
     void test_boolean () {
         var json = parser("[true, false]").parse();
-        assertTrue(json.arraylist().get(0).bool());
-        assertFalse(json.arraylist().get(1).bool());
+        assertTrue(json.as_list().get(0).as_bool());
+        assertFalse(json.as_list().get(1).as_bool());
     }
 
     private void assert_not_number (final String number) {
@@ -227,7 +227,7 @@ class JsonParserTest {
 
     @Test
     void test_empty_value_string () {
-        assertTrue(parser("{\"a\": \"\"}").parse().map().get("a").string().isEmpty());
+        assertTrue(parser("{\"a\": \"\"}").parse().as_map().get("a").as_string().isEmpty());
     }
 
     @Test

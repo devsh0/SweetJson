@@ -62,32 +62,56 @@ public class JsonElement {
             throw new RuntimeException("Cannot convert " + m_type + " to " + type_str + "!");
     }
 
-    public final List<JsonElement> arraylist () {
-        verify_type_or_throw(JsonType.ARRAY, "ArrayList");
+    public final List<JsonElement> as_list () {
+        verify_type_or_throw(JsonType.ARRAY, "List");
         return m_as_list;
     }
 
-    public final Map<String, JsonElement> map () {
+    public final Map<String, JsonElement> as_map () {
         verify_type_or_throw(JsonType.OBJECT, "Map");
         return m_as_map;
     }
 
-    public final String string () {
+    public final String as_string () {
         verify_type_or_throw(JsonType.STRING, "String");
         return (String) m_value;
     }
 
-    public final double number () {
+    public final double as_double () {
         verify_type_or_throw(JsonType.NUMBER, "double");
         return (Double) m_value;
     }
 
-    public final boolean bool () {
+    public final float as_float () {
+        return (float) as_double();
+    }
+
+    public final int as_int () {
+        return (int) as_double();
+    }
+
+    public final char as_char () {
+        return (char) as_int();
+    }
+
+    public final byte as_byte () {
+        return (byte) as_int();
+    }
+
+    public final short as_short () {
+        return (short) as_int();
+    }
+
+    public final long as_long () {
+        return (long) as_double();
+    }
+
+    public final boolean as_bool () {
         verify_type_or_throw(JsonType.BOOL, "boolean");
         return (Boolean) m_value;
     }
 
-    public final Object object () {
+    public final Object as_object () {
         return m_value;
     }
 

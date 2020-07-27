@@ -287,7 +287,7 @@ public class JsonParser {
                     if (next != '"')
                         throw new RuntimeException("Expected `\"`!");
                     var tmp = parse_string();
-                    key = tmp.string();
+                    key = tmp.as_string();
                     if (key.isEmpty())
                         throw new RuntimeException("Empty key not allowed!");
                     state = SEEN_KEY;

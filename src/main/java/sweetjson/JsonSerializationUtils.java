@@ -36,7 +36,7 @@ public class JsonSerializationUtils {
     }
 
     public static Object get_number_field (final JsonElement element, final Class<?> klass) {
-        var number = element.number();
+        var number = element.as_double();
         var class_name = klass.getName().toLowerCase();
         if (class_name.contains("byte"))
             return (byte) number;

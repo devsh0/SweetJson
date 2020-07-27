@@ -26,7 +26,7 @@ public class JsonArrayBinder<T> implements JsonBinder<T> {
 
     @SuppressWarnings("unchecked")
     public T construct (final JsonElement element, final Typedef<T> definition, final Bag bag) {
-        final var list = element.arraylist();
+        final var list = element.as_list();
         final var size = list.size();
         final var component_type = definition.klass().componentType();
         final var model = Array.newInstance(component_type, size);

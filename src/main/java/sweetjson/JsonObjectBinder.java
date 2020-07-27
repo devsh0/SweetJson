@@ -23,7 +23,7 @@ public class JsonObjectBinder<T> implements JsonBinder<T> {
 
     public T construct (final JsonElement element, final Typedef<T> definition, final Bag bag) {
         try {
-            Map<String, JsonElement> m_map = element.map();
+            Map<String, JsonElement> m_map = element.as_map();
             var model = definition.create_instance();
             var serializable_fields = JsonSerializationUtils.get_serializable_fields(definition.klass());
 
