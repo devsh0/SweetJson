@@ -83,18 +83,18 @@ public class JsonElement {
         return m_type != Type.ARRAY && m_type != Type.OBJECT && m_type != Type.UNKNOWN;
     }
 
-    final Object bind_to (final Class<?> prototype) {
+    final <T> T bind_to (final Class<T> prototype) {
         var definition = Typedef.wrap(prototype);
         return SweetJson.get_binder(definition).construct(this, definition, Bag.empty());
     }
 
-    final Object bind_to (final Class<?> prototype, final Bag bag) {
+    final <T> T bind_to (final Class<T> prototype, final Bag bag) {
         var definition = Typedef.wrap(prototype);
         return SweetJson.get_binder(definition).construct(this, definition, Objects.requireNonNull(bag));
     }
 
-    final Object bind_to_generic (final Class<?> prototype, Class<?>... type_args) {
-        var definition = Typedef.builder()
+    final <T> T bind_to_generic (final Class<T> prototype, Class<?>... type_args) {
+        var definition = Typedef.<T>builder()
                 .set_klass(prototype)
                 .set_type_args(type_args)
                 .build();

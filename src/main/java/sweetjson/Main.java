@@ -15,7 +15,7 @@ class Order<T> {
         private String name;
         private String email;
         private String id;
-        private List<PaymentOptions> payment_options;
+        private PaymentOptions[] payment_options;
     }
 
     private List<String> something;
@@ -48,26 +48,22 @@ class Order<T> {
 public class Main {
 
     private static void register_list_binder () {
-        SweetJson.register_binder(Typedef.wrap(List.class), new JsonBinder() {
-            @Override
-            public Object construct (JsonElement element, Typedef type, Bag bag) {
-                var model = new ArrayList<>();
-                var arg = type.first_type_arg();
-                var list = element.arraylist();
-                list.forEach(entry -> model.add(entry.bind_to(arg, bag)));
-                return model;
-            }
+        SweetJson.register_binder(Typedef.wrap(List.class), (element, definition, bag) -> {
+            var model = new ArrayList<>();
+            var arg = definition.first_type_arg();
+            var list = element.arraylist();
+            list.forEach(entry -> model.add(entry.bind_to(arg, bag)));
+            return model;
         });
     }
 
-    @SuppressWarnings("unchecked")
     public static void main (String[] args) throws IOException {
         var json = Files.readString(Paths.get("test-file.json"));
         var element = JsonParser.parse(json);
         register_list_binder();
         // The serializer knows how to serialize lists.
         // We're good even if `Order` includes `List`s.
-        var order = (Order<String>) element.bind_to_generic(Order.class, String.class);
+        var order = element.bind_to_generic(Order.class, String.class);
         if (order.success())
             order.print_details();
     }

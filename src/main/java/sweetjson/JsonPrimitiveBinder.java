@@ -1,16 +1,17 @@
 package sweetjson;
 
-public class JsonPrimitiveBinder implements JsonBinder {
-    public static final JsonBinder INSTANCE = new JsonPrimitiveBinder();
+public class JsonPrimitiveBinder<T> implements JsonBinder<T> {
+    public static final JsonBinder<?> INSTANCE = new JsonPrimitiveBinder<>();
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object construct (final JsonElement element, final Typedef definition, final Bag bag) {
+    public T construct (final JsonElement element, final Typedef<T> definition, final Bag bag) {
         var type = element.get_type();
         return switch (type) {
-            case STRING -> element.string();
-            case NUMBER -> JsonSerializationUtils.get_number_field(element, definition.klass());
-            case BOOL -> element.bool();
-            case NULL -> element.object();
+            case STRING -> (T)element.string();
+            case NUMBER -> (T)JsonSerializationUtils.get_number_field(element, definition.klass());
+            case BOOL -> (T)Boolean.valueOf(element.bool());
+            case NULL -> (T)element.object();
             default -> throw new RuntimeException("Attempted to construct primitive from `" +  (type) + "`!");
         };
     }

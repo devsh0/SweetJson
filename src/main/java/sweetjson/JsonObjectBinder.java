@@ -2,10 +2,10 @@ package sweetjson;
 
 import java.util.Map;
 
-public class JsonObjectBinder implements JsonBinder {
-    public static final JsonBinder INSTANCE = new JsonObjectBinder();
+public class JsonObjectBinder<T> implements JsonBinder<T> {
+    public static final JsonBinder<?> INSTANCE = new JsonObjectBinder<>();
 
-    public Object construct (final JsonElement element, final Typedef definition, final Bag bag) {
+    public T construct (final JsonElement element, final Typedef<T> definition, final Bag bag) {
         try {
             Map<String, JsonElement> m_map = element.map();
             var model = definition.create_instance();
