@@ -5,7 +5,7 @@ A sweet little JSON serializer/deserializer ideal for personal projects.
 - Not fully compatible with the specs.
 - Serialization not supported yet.
 
-**Note:** None of the methods described below are thread safe. Concurrency must be manually managed.
+**Note:** None of the methods described below are thread safe. Concurrency must be manually handled.
 
 ### Usage
 _data.json_
@@ -74,35 +74,31 @@ public class Main {
 Primitive types as well as parameterized and array types are supported. Note that custom annotations aren't
 required (will be added in the future, hopefully soon). The binder will write values to fields whose name
 corresponds to fields in the JSON string. Furthermore, the writer will leave out transient and inherited fields.
-If a JSON field is set to `null`, the binder will throw if the corresponding field is primitive (will be changed
-soon). Extra fields in the JSON string are simply skipped if there are no members corresponding to that key.
+If a JSON field is set to `null`, the binder will throw if the corresponding field is primitive. This shouldn't
+be the default behavior, and I plan to change it soon. Extra fields in the JSON string are simply skipped if there
+are no members corresponding to that key.
 
 We can specify custom binders to handle mapping to objects of types that do not conform to the structure of JSON
 data:
 
 ```java
 public class Main {
-    // Register a binder for `java.util.List`.
-    private static void register_list_binder () {
-        SweetJson.register_binder(Typedef.wrap(List.class), new JsonBinder() {
-            @Override
-            public Object construct (JsonElement element, Typedef definition, Bag bag) {
-                var model = new ArrayList<>();
-                var arg = definition.first_type_arg();
-                var list = element.as_list();
-                list.forEach(entry -> model.add(entry.bind_to(arg)));
-                return model;
-            }
+    public static void main (String[] args) throws IOException {
+        var json = Files.readString(Paths.get("temp.json"));
+        
+        // Register a binder for `java.util.List`.
+        SweetJson.register_binder(Typedef.wrap(List.class), (element, definition, bag) -> {
+            var model = new ArrayList<>();
+            var arg = definition.first_type_arg();
+            var list = element.as_list();
+            list.forEach(entry -> model.add(entry.bind_to(arg)));
+            return model;
         });
+        
+        var user = JsonParser.parse(json).bind_to(User.class);
+        // Assuming `User` has a `List` named `skills`...
+        System.out.println(user.skills.get(0));
     }
-    
-        public static void main (String[] args) throws IOException {
-            var json = Files.readString(Paths.get("data.json"));
-            register_list_binder();
-            var user = JsonParser.parse(json).bind_to(User.class);
-            // Assuming `User` has a `List` named `skills`...
-            System.out.println(user.skills.get(0));
-        }
 }
 ```
 Here we are hardcoding `ArrayList` as the container. If that's not acceptable, you'll need to register more
@@ -117,7 +113,7 @@ specific types. That also means that you have to use specific types while declar
   "user": {
     "name": "John Doe",
     "alias": "doejohn",
-    "email": "johndoes@anonymous.com"
+    "email": "johndoe@example.com"
   }
 }
 ```
@@ -135,9 +131,8 @@ class Employee {
 
 class Server <T> {
     private T user;
-    private transient Connection handle;
     // ...more fields
-    
+
     public T get_user() {
         return user;
     }
@@ -146,8 +141,9 @@ class Server <T> {
 public class Main {
     public static void main (String[] args) {
         // bind_to_generic(Prototype.class, Typearg1.class...TypeargN.class)
-        var server = JsonParser .parse(args[0]).bind_to_generic(Server.class, Employee.class);
-        System.out.println(server.get_user().print_alias();) // Prints "doejohn"
+        var server = (Server<Employee>)JsonParser.parse(Paths.get("temp.json"))
+                .bind_to_generic(Server.class, Employee.class);
+        server.get_user().print_alias(); // Prints "doejohn"
     }
 }
 ```
