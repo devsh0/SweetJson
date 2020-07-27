@@ -26,6 +26,10 @@ import java.util.List;
 import java.util.Map;
 
 public class JsonParser {
+    private enum ParserState {UNINITIATED, INITIATED, ENDED}
+
+    private ParserState m_state = ParserState.UNINITIATED;
+    private int m_depth = 0;
     private final InputStream m_stream;
 
     public JsonParser (final Path file_path) throws IOException {
@@ -63,6 +67,37 @@ public class JsonParser {
 
     private char peek () {
         return (char) peek(1)[0];
+    }
+
+    private void push_depth () {
+        if (m_state == ParserState.INITIATED) {
+            m_depth++;
+            return;
+        }
+
+        if (m_state == ParserState.UNINITIATED) {
+            m_state = ParserState.INITIATED;
+            m_depth++;
+            return;
+        }
+
+        if (m_state == ParserState.ENDED)
+            throw new RuntimeException("Value appeared after parsing ended!");
+    }
+
+    private void pop_depth () {
+        if (m_state == ParserState.INITIATED) {
+            if (m_depth <= 0)
+                throw new RuntimeException("Invalid parser state!");
+
+            m_depth--;
+            if (m_depth == 0) {
+                m_state = ParserState.ENDED;
+                return;
+            }
+        }
+
+        throw new RuntimeException("Invalid parser state!");
     }
 
     private void consume_whitespaces () {
@@ -166,6 +201,7 @@ public class JsonParser {
     }
 
     private JsonElement parse_array () {
+        push_depth();
         final int BEGIN = 0, SEEN_OPEN = 1, SEEN_CLOSE = 2, SEEN_COMA = 3, SEEN_ELEMENT = 4;
         int state = BEGIN;
         List<JsonElement> list = new ArrayList<>();
@@ -205,12 +241,14 @@ public class JsonParser {
                     state = SEEN_OPEN;
                     break;
                 case SEEN_CLOSE:
+                    pop_depth();
                     return new JsonElement(list);
             }
         }
     }
 
     private JsonElement parse_object () {
+        push_depth();
         final int BEGIN = 0, SEEN_OPEN = 1, SEEN_KEY = 2, SEEN_COLON = 3;
         final int SEEN_VALUE = 4, SEEN_COMA = 5, SEEN_CLOSE = 6;
         int state = BEGIN;
@@ -267,6 +305,7 @@ public class JsonParser {
                     state = SEEN_OPEN;
                     break;
                 case SEEN_CLOSE:
+                    pop_depth();
                     return new JsonElement(map);
             }
         }
@@ -279,7 +318,19 @@ public class JsonParser {
                 case OBJECT -> parse_object();
                 default -> null;
             };
-            if (json_element == null) throw new RuntimeException("Invalid JSON file!");
+
+            if (json_element == null || m_state != ParserState.ENDED)
+                throw new RuntimeException("Invalid JSON file!");
+
+            try {
+                if (m_stream.available() > 0) {
+                    // Remaining characters must be whitespaces.
+                    if (get_next_value_type() != JsonElement.JsonType.UNKNOWN)
+                        throw new RuntimeException("Invalid JSON file!");
+                }
+            } catch (IOException ioe)  {
+                throw new RuntimeException(ioe);
+            }
             return json_element;
         } catch (RuntimeException re) {
             String message = re.getMessage();
