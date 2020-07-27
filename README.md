@@ -1,9 +1,11 @@
-Started writing this to overcome boredom but since I'm having fun, I look forward to keep improving it over time. 
+A sweet little JSON serializer/deserializer ideal for personal projects.
 
 ### State of this project
 - Development in progress.
-- Only 90% compliant with the specs.
+- Not fully compatible with the specs.
 - Serialization not supported yet.
+
+**Note:** None of the methods described below are thread safe. Concurrency must be manually managed.
 
 ### Usage
 _data.json_
@@ -13,13 +15,11 @@ _data.json_
     {
       "firstname": "John",
       "lastname": "Doe",
-      "age": 40,
       "skills": ["java", "c", "c++", "sql"]
     },
     {
       "firstname": "Jane",
       "lastname": "Doe",
-      "age": 30,
       "skills": ["javascript", "python", "rust"]
     }
   ]
@@ -31,14 +31,12 @@ _Main.java_
 public class Main {
     public static void main(String[] args) {
         // Get data as map.
-        var json = JsonParser.parse(Paths.get("data.json")).map();
-
-        for (JsonElement element : json.get("people").arryalist()) {
-            var person = element.map();
-            var firstname = person.get("firstname").string();
-            var lastname = person.get("lastname").string();
-            var age = person.get("age").number(); // returns double
-            var skills = person.get("skills").arraylist();
+        var json = JsonParser.parse(Paths.get("data.json")).as_map();
+        for (JsonElement element : json.get("people").as_list()) {
+            var person = element.as_map();
+            System.out.println(person.get("firstname").as_string());
+            System.out.println(person.get("lastname").as_string());
+            System.out.println(person.get("skills").as_list().size());
         }
     }
 }
@@ -67,7 +65,7 @@ class User {
 public class Main {
     public static void main (String[] args) throws IOException {
         var json = Files.readString(Paths.get("data.json"));
-        var user = (User)JsonParser.parse(json).bind_to(User.class);
+        var user = JsonParser.parse(json).bind_to(User.class);
         System.out.println(user.firstname); // prints "John"
     }
 }
@@ -76,8 +74,8 @@ public class Main {
 Primitive types as well as parameterized and array types are supported. Note that custom annotations aren't
 required (will be added in the future, hopefully soon). The binder will write values to fields whose name
 corresponds to fields in the JSON string. Furthermore, the writer will leave out transient and inherited fields.
-If a JSON field is set to `null`, the binder will throw if the corresponding field is primitive. Extra fields in
-the JSON string are simply skipped if there are no members corresponding to that key.
+If a JSON field is set to `null`, the binder will throw if the corresponding field is primitive (will be changed
+soon). Extra fields in the JSON string are simply skipped if there are no members corresponding to that key.
 
 We can specify custom binders to handle mapping to objects of types that do not conform to the structure of JSON
 data:
@@ -86,12 +84,12 @@ data:
 public class Main {
     // Register a binder for `java.util.List`.
     private static void register_list_binder () {
-        SweetJson.register_binder(TypeDefinition.wrap(List.class), new JsonBinder() {
+        SweetJson.register_binder(Typedef.wrap(List.class), new JsonBinder() {
             @Override
-            public Object construct (JsonElement element, TypeDefinition definition, Bag bag) {
+            public Object construct (JsonElement element, Typedef definition, Bag bag) {
                 var model = new ArrayList<>();
                 var arg = definition.first_type_arg();
-                var list = element.arraylist();
+                var list = element.as_list();
                 list.forEach(entry -> model.add(entry.bind_to(arg)));
                 return model;
             }
@@ -101,7 +99,7 @@ public class Main {
         public static void main (String[] args) throws IOException {
             var json = Files.readString(Paths.get("data.json"));
             register_list_binder();
-            var user = (User)JsonParser.parse(json).bind_to(User.class);
+            var user = JsonParser.parse(json).bind_to(User.class);
             // Assuming `User` has a `List` named `skills`...
             System.out.println(user.skills.get(0));
         }
@@ -147,13 +145,12 @@ class Server <T> {
 
 public class Main {
     public static void main (String[] args) {
-        var server = (Server<Employee>)JsonParser
-                            .parse(args[0])
-                            .bind_to_generic(Server.class, Employee.class); // Prototype.class, Typearg1.class...TypeargN.class
+        // bind_to_generic(Prototype.class, Typearg1.class...TypeargN.class)
+        var server = JsonParser .parse(args[0]).bind_to_generic(Server.class, Employee.class);
         System.out.println(server.get_user().print_alias();) // Prints "doejohn"
     }
 }
 ```
 
-**Note: Documentation is updated from time to time as the development proceeds. But the README usually won't
-reflect the latest API changes.**
+**Note:** Documentation is updated from time to time as the development proceeds. But the README usually won't
+reflect the latest API changes.
