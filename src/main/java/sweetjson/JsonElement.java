@@ -46,54 +46,54 @@ public class JsonElement {
             throw new RuntimeException("Cannot convert " + m_type + " to " + type_str + "!");
     }
 
-    final List<JsonElement> arraylist () {
+    public final List<JsonElement> arraylist () {
         verify_type_or_throw(JsonType.ARRAY, "ArrayList");
         return m_as_list;
     }
 
-    final Map<String, JsonElement> map () {
+    public final Map<String, JsonElement> map () {
         verify_type_or_throw(JsonType.OBJECT, "Map");
         return m_as_map;
     }
 
-    final String string () {
+    public final String string () {
         verify_type_or_throw(JsonType.STRING, "String");
         return (String) m_value;
     }
 
-    final double number () {
+    public final double number () {
         verify_type_or_throw(JsonType.NUMBER, "double");
         return (Double) m_value;
     }
 
-    final boolean bool () {
+    public final boolean bool () {
         verify_type_or_throw(JsonType.BOOL, "boolean");
         return (Boolean) m_value;
     }
 
-    final Object object () {
+    public final Object object () {
         return m_value;
     }
 
-    final JsonType get_type () {
+    public final JsonType get_type () {
         return m_type;
     }
 
-    final boolean is_primitive () {
+    public final boolean is_primitive () {
         return m_type != JsonType.ARRAY && m_type != JsonType.OBJECT && m_type != JsonType.UNKNOWN;
     }
 
-    final <T> T bind_to (final Class<T> prototype) {
+    public final <T> T bind_to (final Class<T> prototype) {
         var definition = Typedef.wrap(prototype);
         return SweetJson.get_binder(definition).construct(this, definition, Bag.empty());
     }
 
-    final <T> T bind_to (final Class<T> prototype, final Bag bag) {
+    public final <T> T bind_to (final Class<T> prototype, final Bag bag) {
         var definition = Typedef.wrap(prototype);
         return SweetJson.get_binder(definition).construct(this, definition, Objects.requireNonNull(bag));
     }
 
-    final <T> T bind_to_generic (final Class<T> prototype, Class<?>... type_args) {
+    public final <T> T bind_to_generic (final Class<T> prototype, Class<?>... type_args) {
         var definition = Typedef.<T>builder()
                 .set_klass(prototype)
                 .set_type_args(type_args)

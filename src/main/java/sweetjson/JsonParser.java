@@ -1,3 +1,4 @@
+
 package sweetjson;
 
 import java.io.*;
