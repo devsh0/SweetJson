@@ -149,6 +149,9 @@ public class JsonParser {
     }
 
     private JsonElement parse_string () {
+        if (m_state != ParserState.INITIATED)
+            throw new RuntimeException("Invalid parser state!");
+
         StringBuilder builder = new StringBuilder();
         read(); // consume " at the beginning
         while (true) {
@@ -177,6 +180,9 @@ public class JsonParser {
     }
 
     private JsonElement parse_number () {
+        if (m_state != ParserState.INITIATED)
+            throw new RuntimeException("Invalid parser state!");
+
         StringBuilder builder = new StringBuilder();
         while (is_numeric(peek()))
             builder.append(read());
@@ -184,6 +190,9 @@ public class JsonParser {
     }
 
     private JsonElement parse_boolean () {
+        if (m_state != ParserState.INITIATED)
+            throw new RuntimeException("Invalid parser state!");
+
         String literal = new String(read(4));
         if (literal.equals("true"))
             return new JsonElement(Boolean.TRUE);
@@ -194,6 +203,9 @@ public class JsonParser {
     }
 
     private JsonElement parse_null () {
+        if (m_state != ParserState.INITIATED)
+            throw new RuntimeException("Invalid parser state!");
+
         String literal = new String(read(4));
         if (literal.equals("null"))
             return new JsonElement(null);

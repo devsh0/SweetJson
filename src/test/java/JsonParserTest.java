@@ -197,7 +197,7 @@ class JsonParserTest {
 
     @Test
     void test_missing_top_level_value () {
-        assertThrows(RuntimeException.class, () -> parser("\"a\": \"1\""));
+        assertThrows(RuntimeException.class, () -> parser("\"a\": \"1\"").parse());
     }
 
     @Test
