@@ -227,6 +227,6 @@ class JsonParserTest {
 
     @Test
     void test_extra_values_in_object () {
-        assertThrows(RuntimeException.class, () -> parser("{\"a\": 1,2}"));
+        assertThrows(RuntimeException.class, () -> parser("{\"a\": 1,2}").parse());
     }
 }
