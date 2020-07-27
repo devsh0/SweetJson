@@ -65,27 +65,27 @@ public class JsonParser {
         }
     }
 
-    private JsonElement.Type get_next_value_type () {
+    private JsonElement.JsonType get_next_value_type () {
         char next = peek();
         switch (next) {
             case '{':
-                return JsonElement.Type.OBJECT;
+                return JsonElement.JsonType.OBJECT;
             case '[':
-                return JsonElement.Type.ARRAY;
+                return JsonElement.JsonType.ARRAY;
             case '"':
-                return JsonElement.Type.STRING;
+                return JsonElement.JsonType.STRING;
             case 't':
             case 'f':
-                return JsonElement.Type.BOOL;
+                return JsonElement.JsonType.BOOL;
             case 'n':
-                return JsonElement.Type.NULL;
+                return JsonElement.JsonType.NULL;
         }
         if (is_numeric(next))
-            return JsonElement.Type.NUMBER;
-        return JsonElement.Type.UNKNOWN;
+            return JsonElement.JsonType.NUMBER;
+        return JsonElement.JsonType.UNKNOWN;
     }
 
-    private JsonElement parse_element (final JsonElement.Type type) {
+    private JsonElement parse_element (final JsonElement.JsonType type) {
         return switch (type) {
             case STRING -> parse_string();
             case NUMBER -> parse_number();
@@ -183,7 +183,7 @@ public class JsonParser {
                     break;
                 case SEEN_COMA:
                     consume_whitespaces();
-                    if (get_next_value_type() == JsonElement.Type.UNKNOWN)
+                    if (get_next_value_type() == JsonElement.JsonType.UNKNOWN)
                         throw new RuntimeException("Unknown value type!");
                     // We didn't...but the state is identical.
                     state = SEEN_OPEN;
@@ -246,7 +246,7 @@ public class JsonParser {
                     break;
                 case SEEN_COMA:
                     consume_whitespaces();
-                    if (get_next_value_type() == JsonElement.Type.UNKNOWN)
+                    if (get_next_value_type() == JsonElement.JsonType.UNKNOWN)
                         throw new RuntimeException("Unknown value type!");
                     state = SEEN_OPEN;
                     break;

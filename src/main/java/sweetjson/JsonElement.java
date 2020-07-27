@@ -6,7 +6,7 @@ import java.util.Objects;
 
 @SuppressWarnings("unchecked")
 public class JsonElement {
-    public enum Type {
+    public enum JsonType {
         UNKNOWN,
         STRING,
         NUMBER,
@@ -17,7 +17,7 @@ public class JsonElement {
     }
 
     private final Object m_value;
-    private final Type m_type;
+    private final JsonType m_type;
 
     private Map<String, JsonElement> m_as_map = null;
     private List<JsonElement> m_as_list = null;
@@ -25,49 +25,49 @@ public class JsonElement {
     JsonElement (final Object value) {
         m_value = value;
         if (value instanceof String)
-            m_type = Type.STRING;
+            m_type = JsonType.STRING;
         else if (value instanceof Double)
-            m_type = Type.NUMBER;
+            m_type = JsonType.NUMBER;
         else if (value instanceof Boolean)
-            m_type = Type.BOOL;
+            m_type = JsonType.BOOL;
         else if (value == null)
-            m_type = Type.NULL;
+            m_type = JsonType.NULL;
         else if (value instanceof Map) {
             m_as_map = (Map<String, JsonElement>) value;
-            m_type = Type.OBJECT;
+            m_type = JsonType.OBJECT;
         } else if (value instanceof List) {
             m_as_list = (List<JsonElement>) value;
-            m_type = Type.ARRAY;
+            m_type = JsonType.ARRAY;
         } else throw new RuntimeException("Incompatible value type `" + value.getClass().getName() + "`");
     }
 
-    private void verify_type_or_throw (final Type type, final String type_str) {
+    private void verify_type_or_throw (final JsonType type, final String type_str) {
         if (m_type != type)
-            throw new RuntimeException("Cannot convert `" + this.m_type + "` to " + type_str + "!");
+            throw new RuntimeException("Cannot convert " + m_type + " to " + type_str + "!");
     }
 
     final List<JsonElement> arraylist () {
-        verify_type_or_throw(Type.ARRAY, "ArrayList");
+        verify_type_or_throw(JsonType.ARRAY, "ArrayList");
         return m_as_list;
     }
 
     final Map<String, JsonElement> map () {
-        verify_type_or_throw(Type.OBJECT, "Map");
+        verify_type_or_throw(JsonType.OBJECT, "Map");
         return m_as_map;
     }
 
     final String string () {
-        verify_type_or_throw(Type.STRING, "String");
+        verify_type_or_throw(JsonType.STRING, "String");
         return (String) m_value;
     }
 
     final double number () {
-        verify_type_or_throw(Type.NUMBER, "double");
+        verify_type_or_throw(JsonType.NUMBER, "double");
         return (Double) m_value;
     }
 
     final boolean bool () {
-        verify_type_or_throw(Type.BOOL, "boolean");
+        verify_type_or_throw(JsonType.BOOL, "boolean");
         return (Boolean) m_value;
     }
 
@@ -75,12 +75,12 @@ public class JsonElement {
         return m_value;
     }
 
-    final Type get_type () {
+    final JsonType get_type () {
         return m_type;
     }
 
     final boolean is_primitive () {
-        return m_type != Type.ARRAY && m_type != Type.OBJECT && m_type != Type.UNKNOWN;
+        return m_type != JsonType.ARRAY && m_type != JsonType.OBJECT && m_type != JsonType.UNKNOWN;
     }
 
     final Object bind_to (final Class<?> prototype) {
