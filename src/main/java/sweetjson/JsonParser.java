@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 public class JsonParser {
-    private enum ParserState {UNINITIATED, INITIATED, ENDED}
+    private enum ParserState {UNINITIATED, INITIATED, TERMINATED}
 
     private ParserState m_state = ParserState.UNINITIATED;
     private int m_depth = 0;
@@ -81,7 +81,7 @@ public class JsonParser {
             return;
         }
 
-        if (m_state == ParserState.ENDED)
+        if (m_state == ParserState.TERMINATED)
             throw new RuntimeException("Value appeared after parsing ended!");
     }
 
@@ -92,7 +92,7 @@ public class JsonParser {
 
             m_depth--;
             if (m_depth == 0)
-                m_state = ParserState.ENDED;
+                m_state = ParserState.TERMINATED;
             return;
         }
 
@@ -332,7 +332,7 @@ public class JsonParser {
                 default -> null;
             };
 
-            if (json_element == null || m_state != ParserState.ENDED)
+            if (json_element == null || m_state != ParserState.TERMINATED)
                 throw new RuntimeException("Invalid JSON file!");
 
             try {
