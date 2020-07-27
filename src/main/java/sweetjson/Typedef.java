@@ -1,18 +1,17 @@
 package sweetjson;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Typedef {
+public class Typedef<T> {
     private final String m_id;
-    private final Class<?> m_klass;
+    private final Class<T> m_klass;
     private final Class<?>[] m_type_args;
     private boolean m_is_generic_type;
     private final Map<String, Class<?>> m_type_parameter_map = new HashMap<>();
 
-    private Typedef (final Class<?> klass, final Class<?>[] type_arguments) {
+    private Typedef (final Class<T> klass, final Class<?>[] type_arguments) {
         m_id = klass.getCanonicalName().toLowerCase();
         m_klass = klass;
         m_type_args = type_arguments;
@@ -39,7 +38,7 @@ public class Typedef {
         }
     }
 
-    public Class<?> klass () {
+    public Class<T> klass () {
         return m_klass;
     }
 
@@ -96,11 +95,11 @@ public class Typedef {
     public boolean equals (final Object other) {
         if (!(other instanceof Typedef))
             return false;
-        var other_type = (Typedef) other;
+        var other_type = (Typedef<T>) other;
         return other_type.m_id.equals(m_id);
     }
 
-    public Object create_instance () {
+    public T create_instance () {
         try {
             return klass().getDeclaredConstructor().newInstance();
         } catch (NoSuchMethodException
@@ -111,32 +110,32 @@ public class Typedef {
         }
     }
 
-    public static class Builder {
-        private Class<?> m_klass;
+    public static class Builder<T> {
+        private Class<T> m_klass;
         private Class<?>[] m_type_args;
 
-        public Builder set_klass (final Class<?> klass) {
+        public Builder<T> set_klass (final Class<T> klass) {
             m_klass = klass;
             return this;
         }
 
-        public Builder set_type_args (final Class<?>... type_args) {
+        public Builder<T> set_type_args (final Class<?>... type_args) {
             m_type_args = type_args == null ? new Class<?>[]{} : type_args;
             return this;
         }
 
-        public Typedef build () {
+        public Typedef<T> build () {
             if (m_klass == null)
                 throw new RuntimeException("No klass specified!");
-            return new Typedef(m_klass, m_type_args);
+            return new Typedef<T>(m_klass, m_type_args);
         }
     }
 
-    public static Typedef wrap (final Class<?> klass) {
-        return new Typedef(klass, new Class<?>[]{});
+    public static <T> Typedef<T> wrap (final Class<T> klass) {
+        return new Typedef<T>(klass, new Class<?>[]{});
     }
 
-    public static Builder builder () {
-        return new Builder();
+    public static <T> Builder<T> builder () {
+        return new Builder<T>();
     }
 }

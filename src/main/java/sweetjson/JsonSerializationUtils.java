@@ -3,6 +3,7 @@ package sweetjson;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,17 +37,18 @@ public class JsonSerializationUtils {
         return number;
     }
 
-    public static Typedef get_field_typedef (final Field field, final Typedef owner_typedef) {
-        var generic_type_of_field = field.getGenericType();
-        var type_of_field = owner_typedef.get_type_argument(generic_type_of_field.getTypeName());
-        type_of_field = type_of_field == null ? field.getType() : type_of_field;
+    @SuppressWarnings("unchecked")
+    public static <T> Typedef<T> get_field_typedef (final Field field, final Typedef<?> owner_typedef) {
+        Type generic_type_of_field = field.getGenericType();
+        Class<T> type_of_field = (Class<T>)owner_typedef.get_type_argument(generic_type_of_field.getTypeName());
+        type_of_field = type_of_field == null ? (Class<T>)field.getType() : type_of_field;
         if (!(generic_type_of_field instanceof ParameterizedType))
             return Typedef.wrap(type_of_field);
 
         // Field is parameterized (e.g.: List<String> something).
         // FIXME: We don't handle cases like the type argument itself is parameterized (e.g.: List<List<String>>)
         var parameterized_type_of_field = (ParameterizedType) generic_type_of_field;
-        var type_arguments = parameterized_type_of_field.getActualTypeArguments();
+        Type[] type_arguments = parameterized_type_of_field.getActualTypeArguments();
         Class<?>[] klass_of_args = new Class<?>[type_arguments.length];
 
         for (int i = 0; i < klass_of_args.length; i++) {
@@ -54,6 +56,6 @@ public class JsonSerializationUtils {
             klass_of_args[i] = mapping == null ? (Class<?>) type_arguments[i] : mapping;
         }
 
-        return Typedef.builder().set_klass(type_of_field).set_type_args(klass_of_args).build();
+        return Typedef.<T>builder().set_klass(type_of_field).set_type_args(klass_of_args).build();
     }
 }
