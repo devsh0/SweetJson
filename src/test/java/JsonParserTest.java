@@ -155,7 +155,7 @@ class JsonParserTest {
         assert_not_number("1.1ex");
         assert_not_number("1.1e1x");
 
-        // FIXME: These throw in Gson
+        // FIXME: These throw in Gson.
         // fraction has no digit
         //assert_not_number("0.");
         //assert_not_number("-0.");
@@ -221,8 +221,13 @@ class JsonParserTest {
     }
 
     @Test
-    void test_empty_string_name () {
+    void test_empty_key_string () {
         assertThrows(RuntimeException.class, () -> parser("{\"\": 1}").parse());
+    }
+
+    @Test
+    void test_empty_value_string () {
+        assertTrue(parser("{\"a\": \"\"}").parse().map().get("a").string().isEmpty());
     }
 
     @Test

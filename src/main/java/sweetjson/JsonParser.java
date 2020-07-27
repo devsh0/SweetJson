@@ -288,6 +288,8 @@ public class JsonParser {
                         throw new RuntimeException("Expected `\"`!");
                     var tmp = parse_string();
                     key = tmp.string();
+                    if (key.isEmpty())
+                        throw new RuntimeException("Empty key not allowed!");
                     state = SEEN_KEY;
                     break;
                 case SEEN_KEY:
