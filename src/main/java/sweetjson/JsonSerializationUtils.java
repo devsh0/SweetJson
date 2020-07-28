@@ -21,6 +21,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class JsonSerializationUtils {
@@ -73,5 +74,28 @@ public class JsonSerializationUtils {
         }
 
         return Typedef.<T>builder().set_klass(type_of_field).set_type_args(klass_of_args).build();
+    }
+
+    private static String[] get_type_parameter_names (final Class<?> klass) {
+        var gstring = klass.toGenericString();
+        var type_parameters_str = gstring.substring(gstring.indexOf("<"))
+                .replace("<", "")
+                .replace(">", "")
+                .replaceAll("\\s","");
+        return type_parameters_str.split(",");
+    }
+    
+    public static Map<String, Class<?>> get_type_argument_map (final Class<?> klass, final Class<?>[] arguments) {
+        final Map<String, Class<?>> type_parameter_map = new HashMap<>();
+        var type_parameters = get_type_parameter_names(klass);
+        if (arguments.length != type_parameters.length) {
+            final var format = "Too few/many type arguments (expected: %d, supplied: %d)!";
+            throw new RuntimeException(String.format(format, type_parameters.length, arguments.length));
+        }
+        for (int i = 0; i < type_parameters.length; i++) {
+            type_parameter_map.put(type_parameters[i], arguments[i]);
+            type_parameter_map.put(type_parameters[i] + "[]", arguments[i].arrayType());
+        }
+        return type_parameter_map;
     }
 }

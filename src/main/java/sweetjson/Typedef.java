@@ -20,38 +20,22 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public class Typedef<T> {
     private final String m_id;
     private final Class<T> m_klass;
-    private final Class<?>[] m_type_args;
+    private final Class<?>[] m_type_arguments;
     private boolean m_is_generic_type;
-    private final Map<String, Class<?>> m_type_parameter_map = new HashMap<>();
+    private final Map<String, Class<?>> m_type_parameter_map;
 
     private Typedef (final Class<T> klass, final Class<?>[] type_arguments) {
         m_id = klass.getCanonicalName().toLowerCase();
         m_klass = klass;
-        m_type_args = type_arguments;
+        m_type_arguments = type_arguments;
         if (klass.toGenericString().contains("<") && type_arguments.length > 0) {
             m_is_generic_type = true;
-            associate_type_arguments();
-        }
-    }
-
-    private void associate_type_arguments () {
-        var gstring = klass().toGenericString();
-        var type_parameters_str = gstring.substring(gstring.indexOf("<"))
-                .replace("<", "")
-                .replace(">", "")
-                .replaceAll("\\s","");
-        var type_parameters = type_parameters_str.split(",");
-        if (m_type_args.length != type_parameters.length) {
-            final var format = "Too few/many type arguments (expected: %d, supplied: %d)!";
-            throw new RuntimeException(String.format(format, type_parameters.length, m_type_args.length));
-        }
-        for (int i = 0; i < type_parameters.length; i++) {
-            m_type_parameter_map.put(type_parameters[i], m_type_args[i]);
-            m_type_parameter_map.put(type_parameters[i] + "[]", m_type_args[i].arrayType());
-        }
+            m_type_parameter_map = JsonSerializationUtils.get_type_argument_map(klass, type_arguments);
+        } else m_type_parameter_map = new HashMap<>();
     }
 
     public Class<T> klass () {
@@ -75,7 +59,7 @@ public class Typedef<T> {
     }
 
     public Class<?>[] type_args () {
-        return m_type_args;
+        return m_type_arguments;
     }
 
     public boolean has_type_argument_mapping (final String type_parameter) {
@@ -87,15 +71,15 @@ public class Typedef<T> {
     }
 
     public Class<?> first_type_arg () {
-        return m_type_args[0];
+        return m_type_arguments[0];
     }
 
     public Class<?> second_type_arg () {
-        return m_type_args[1];
+        return m_type_arguments[1];
     }
 
     public boolean has_type_args () {
-        return m_type_args.length > 0;
+        return m_type_arguments.length > 0;
     }
 
     public boolean is_generic_type () {
