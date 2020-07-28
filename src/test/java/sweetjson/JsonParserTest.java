@@ -1,4 +1,4 @@
-/*
+package sweetjson;/*
  * Copyright (C) 2010 Google Inc.
  * Copyright (C) 2020 Devashish Jaiswal.
  *
@@ -16,8 +16,6 @@
  */
 
 import org.junit.jupiter.api.Test;
-import sweetjson.JsonElement;
-import sweetjson.JsonParser;
 
 import static org.junit.jupiter.api.Assertions.*;
 
