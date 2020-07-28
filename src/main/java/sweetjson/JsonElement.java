@@ -57,6 +57,10 @@ public class JsonElement {
         } else throw new RuntimeException("Incompatible value type `" + value.getClass().getName() + "`");
     }
 
+    public boolean is_null () {
+        return as_object() == null;
+    }
+
     private void verify_type_or_throw (final JsonType type, final String type_str) {
         if (m_type != type)
             throw new RuntimeException("Cannot convert " + m_type + " to " + type_str + "!");

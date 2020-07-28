@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SuppressWarnings("unchecked")
 public class DataBindingTest {
@@ -58,5 +59,32 @@ public class DataBindingTest {
         var object = (G2<Byte>)json.bind_to_generic(G2.class, Byte.class);
         assertEquals(object.values.get(0).get(0).byteValue(), 1);
         assertEquals(object.values.get(1).get(0).byteValue(), 2);
+    }
+
+    static class G3 {
+        private int value = 5;
+        private int integer = 10;
+        private String string = "string";
+    }
+    
+    @Test
+    void test_null_skipped_in_objects () {
+        String data = "{\"value\": null}";
+        var object = parser(data).parse().bind_to(G3.class);
+        assertEquals(5, object.value);
+
+        data = "{\"object\": {\"integer\": 1, \"string\": null}}";
+        object = parser(data).parse().bind_to(G3.class);
+        assertEquals(10, object.integer);
+        assertEquals("string", object.string);
+    }
+
+    @Test
+    void test_null_skipped_in_arrays () {
+        String data = "[1, 2, null, 4]";
+        var array = parser(data).parse().bind_to(Integer[].class);
+        assertEquals(3, array.length);
+        assertEquals(1, array[0]);
+        assertEquals(4, array[2]);
     }
 }

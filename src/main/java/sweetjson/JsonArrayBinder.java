@@ -21,17 +21,20 @@ import java.lang.reflect.Array;
 public class JsonArrayBinder<T> implements JsonBinder<T> {
     public static final JsonBinder<?> INSTANCE = new JsonArrayBinder<>();
 
-    private JsonArrayBinder () {
-    }
-
     @SuppressWarnings("unchecked")
     public T construct (final JsonElement element, final Typedef<T> definition, final Bag bag) {
+        //if (element.is_null()) return null;
         final var list = element.as_list();
-        final var size = list.size();
         final var component_type = definition.klass().componentType();
-        final var model = Array.newInstance(component_type, size);
-        for (int i = 0; i < size; i++) {
-            Array.set(model, i, list.get(i).bind_to(component_type, bag));
+        int size_without_null = 0;
+        for (var entry : list) size_without_null += entry.is_null() ? 0 : 1;
+        final var model = Array.newInstance(component_type, size_without_null);
+        int i = 0, j = 0;
+        while (j < list.size()) {
+            var entry = list.get(j);
+            if (!entry.is_null())
+                Array.set(model, i++, entry.bind_to(component_type, bag));
+            j++;
         }
         return (T)model;
     }
