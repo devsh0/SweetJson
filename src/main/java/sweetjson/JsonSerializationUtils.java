@@ -21,7 +21,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class JsonSerializationUtils {
@@ -63,7 +62,7 @@ public class JsonSerializationUtils {
             return Typedef.wrap(type_of_field);
 
         // Field is parameterized (e.g.: List<String> something).
-        // FIXME: We don't handle cases like the type argument itself is parameterized (e.g.: List<List<String>>)
+        // FIXME: We don't handle cases where type argument itself is parameterized (e.g.: List<List<String>>)
         var parameterized_type_of_field = (ParameterizedType) generic_type_of_field;
         Type[] type_arguments = parameterized_type_of_field.getActualTypeArguments();
         Class<?>[] klass_of_args = new Class<?>[type_arguments.length];
@@ -93,8 +92,12 @@ public class JsonSerializationUtils {
             throw new RuntimeException(String.format(format, type_parameters.length, arguments.length));
         }
         for (int i = 0; i < type_parameters.length; i++) {
-            type_parameter_map.put(type_parameters[i], arguments[i]);
-            type_parameter_map.put(type_parameters[i] + "[]", arguments[i].arrayType());
+            // Don't look...just don't look. Pretend it doesn't exist.
+            var base = type_parameters[i];
+            type_parameter_map.put(base, arguments[i]);
+            type_parameter_map.put(base + "[]", arguments[i].arrayType());
+            type_parameter_map.put(base + "[][]", arguments[i].arrayType().arrayType());
+            type_parameter_map.put(base + "[][][]", arguments[i].arrayType().arrayType().arrayType());
         }
         return type_parameter_map;
     }
