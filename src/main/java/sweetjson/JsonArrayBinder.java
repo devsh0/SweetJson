@@ -30,8 +30,9 @@ public class JsonArrayBinder<T> implements JsonBinder<T> {
         final var size = list.size();
         final var component_type = definition.klass().componentType();
         final var model = Array.newInstance(component_type, size);
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < size; i++) {
             Array.set(model, i, list.get(i).bind_to(component_type, bag));
+        }
         return (T)model;
     }
 }
