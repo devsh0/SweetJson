@@ -74,9 +74,8 @@ public class Main {
 Primitive types as well as parameterized and array types are supported. Note that custom annotations aren't
 required (will be added in the future, hopefully soon). The binder will write values to fields whose name
 corresponds to fields in the JSON string. Furthermore, the writer will leave out transient and inherited fields.
-If a JSON field is set to `null`, the binder will throw if the corresponding field is primitive. This shouldn't
-be the default behavior, and I plan to change it soon. Extra fields in the JSON string are simply skipped if there
-are no members corresponding to that key.
+JSON fields that are `null` are by default ignored and there is no way to change that behavior as of now. Extra
+fields in the JSON string are skipped if there are no members corresponding to that key.
 
 We can specify custom binders to handle mapping to objects of types that do not conform to the structure of JSON
 data:
@@ -101,12 +100,13 @@ public class Main {
     }
 }
 ```
-Here we are hardcoding `ArrayList` as the container. If that's not acceptable, you'll need to register more
-specific types. That also means that you have to use specific types while declaring variables (so not cool).
+Here we are hardcoding `ArrayList` as the container. If that's not acceptable, you can insert data into the bag and
+inspect it before creating a collection instance. The data stored in the bag is guaranteed to persist throughout the
+lifetime of a binding request.
 
 ### Generic Types
 
-`SweetJson` provides basic support for deserializing generic types. Here's a (bad) example:
+SweetJson provides basic deserialization support for generic types. Here's a (bad) example:
 
 ```json
 {
@@ -139,10 +139,11 @@ class Server <T> {
 }
 
 public class Main {
+    @SuppressWarnings("unchecked")
     public static void main (String[] args) {
+        var server_element = JsonParser.parse(Paths.get("server_response.json"));
         // bind_to_generic(Prototype.class, Typearg1.class...TypeargN.class)
-        var server = (Server<Employee>)JsonParser.parse(Paths.get("temp.json"))
-                .bind_to_generic(Server.class, Employee.class);
+        Server<Employee> server = server_element.bind_to_generic(Server.class, Employee.class);
         server.get_user().print_alias(); // Prints "doejohn"
     }
 }

@@ -355,11 +355,24 @@ public class JsonParser {
         }
     }
 
-    public static JsonElement parse (final Path file_path) {
+    private static void dispose (final JsonParser parser) {
         try {
-            return (new JsonParser(file_path)).parse();
+            if (parser != null)
+                parser.m_stream.close();
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
+        }
+    }
+
+    public static JsonElement parse (final Path file_path) {
+        JsonParser parser = null;
+        try {
+            parser = new JsonParser(file_path);
+            return parser.parse();
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        } finally {
+            dispose(parser);
         }
     }
 
