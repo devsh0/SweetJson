@@ -17,6 +17,7 @@
 package sweetjson;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -30,46 +31,67 @@ public class JsonParser {
 
     private ParserState m_state = ParserState.UNINITIATED;
     private int m_depth = 0;
-    private final InputStream m_stream;
 
-    public JsonParser (final Path file_path) throws IOException {
-        m_stream = new BufferedInputStream(Files.newInputStream(file_path, StandardOpenOption.READ));
+    private final BufferedReader m_reader;
+
+    public JsonParser (final Path file_path) throws IOException
+    {
+        var stream = Files.newInputStream(file_path, StandardOpenOption.READ);
+        m_reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
     }
 
-    public JsonParser (final String json) {
-        m_stream = new BufferedInputStream(new ByteArrayInputStream(json.getBytes()));
+    public JsonParser (final String json)
+    {
+        var stream = new InputStreamReader(new ByteArrayInputStream(json.getBytes()), StandardCharsets.UTF_8);
+        m_reader = new BufferedReader(stream);
     }
 
-    private byte[] read (int count) {
-        StringBuilder builder = new StringBuilder();
+    private char read ()
+    {
         try {
-            builder.append(new String(m_stream.readNBytes(count)));
-            return builder.toString().getBytes();
+            int read = m_reader.read();
+            if (read == -1)
+                throw new RuntimeException("Attempted reading beyond EOF!");
+            return (char) read;
+        } catch (IOException ioe) {
+            throw new RuntimeException("Failed to parse JSON!");
+        }
+    }
+
+    private String read_string (int length)
+    {
+        var builder = new StringBuilder();
+        for (int i = 0; i < length; i++)
+            builder.append(read());
+        return builder.toString();
+    }
+
+    private boolean eof_reached ()
+    {
+        try {
+            m_reader.mark(1);
+            var next = m_reader.read();
+            m_reader.reset();
+            return next == -1;
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
     }
 
-    private char read () {
-        return (char) read(1)[0];
-    }
-
-    private byte[] peek (int count) {
-        m_stream.mark(count);
+    private char peek ()
+    {
         try {
-            var bytes = read(count);
-            m_stream.reset();
-            return bytes;
+            m_reader.mark(1);
+            char next = read();
+            m_reader.reset();
+            return next;
         } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
+            throw new RuntimeException("Failed to parse JSON!");
         }
     }
 
-    private char peek () {
-        return (char) peek(1)[0];
-    }
-
-    private void push_depth () {
+    private void push_depth ()
+    {
         if (m_state == ParserState.INITIATED) {
             m_depth++;
             return;
@@ -85,7 +107,8 @@ public class JsonParser {
             throw new RuntimeException("Value appeared after parsing ended!");
     }
 
-    private void pop_depth () {
+    private void pop_depth ()
+    {
         if (m_state == ParserState.INITIATED) {
             if (m_depth <= 0)
                 throw new RuntimeException("Invalid parser state!");
@@ -99,7 +122,8 @@ public class JsonParser {
         throw new RuntimeException("Invalid parser state!");
     }
 
-    private void consume_whitespaces () {
+    private void consume_whitespaces ()
+    {
         while (true) {
             switch (peek()) {
                 case ' ':
@@ -115,7 +139,8 @@ public class JsonParser {
         }
     }
 
-    private JsonElement.JsonType get_next_value_type () {
+    private JsonElement.JsonType get_next_value_type ()
+    {
         char next = peek();
         switch (next) {
             case '{':
@@ -135,7 +160,8 @@ public class JsonParser {
         return JsonElement.JsonType.UNKNOWN;
     }
 
-    private JsonElement parse_element (final JsonElement.JsonType type) {
+    private JsonElement parse_element (final JsonElement.JsonType type)
+    {
         return switch (type) {
             case STRING -> parse_string();
             case NUMBER -> parse_number();
@@ -147,7 +173,8 @@ public class JsonParser {
         };
     }
 
-    private JsonElement parse_string () {
+    private JsonElement parse_string ()
+    {
         if (m_state != ParserState.INITIATED)
             throw new RuntimeException("Invalid parser state!");
 
@@ -168,7 +195,8 @@ public class JsonParser {
         }
     }
 
-    private boolean is_numeric (char ch) {
+    private boolean is_numeric (char ch)
+    {
         if (ch == '+' || ch == '-')
             return true;
         if (ch >= '0' && ch <= '9')
@@ -178,7 +206,8 @@ public class JsonParser {
         return false;
     }
 
-    private JsonElement parse_number () {
+    private JsonElement parse_number ()
+    {
         if (m_state != ParserState.INITIATED)
             throw new RuntimeException("Invalid parser state!");
 
@@ -188,11 +217,12 @@ public class JsonParser {
         return new JsonElement(Double.parseDouble(builder.toString()));
     }
 
-    private JsonElement parse_boolean () {
+    private JsonElement parse_boolean ()
+    {
         if (m_state != ParserState.INITIATED)
             throw new RuntimeException("Invalid parser state!");
 
-        String literal = new String(read(4));
+        String literal = read_string(4);
         if (literal.equals("true"))
             return new JsonElement(Boolean.TRUE);
         literal += read();
@@ -201,17 +231,19 @@ public class JsonParser {
         throw new RuntimeException("Invalid literal `" + literal + "` for boolean!");
     }
 
-    private JsonElement parse_null () {
+    private JsonElement parse_null ()
+    {
         if (m_state != ParserState.INITIATED)
             throw new RuntimeException("Invalid parser state!");
 
-        String literal = new String(read(4));
+        String literal = read_string(4);
         if (literal.equals("null"))
             return new JsonElement(null);
         throw new RuntimeException("Invalid literal `" + literal + "` for null!");
     }
 
-    private JsonElement parse_array () {
+    private JsonElement parse_array ()
+    {
         push_depth();
         final int BEGIN = 0, SEEN_OPEN = 1, SEEN_CLOSE = 2, SEEN_COMA = 3, SEEN_ELEMENT = 4;
         int state = BEGIN;
@@ -258,7 +290,8 @@ public class JsonParser {
         }
     }
 
-    private JsonElement parse_object () {
+    private JsonElement parse_object ()
+    {
         push_depth();
         final int BEGIN = 0, SEEN_OPEN = 1, SEEN_KEY = 2, SEEN_COLON = 3;
         final int SEEN_VALUE = 4, SEEN_COMA = 5, SEEN_CLOSE = 6;
@@ -324,7 +357,8 @@ public class JsonParser {
         }
     }
 
-    public JsonElement parse () {
+    public JsonElement parse ()
+    {
         try {
             JsonElement json_element = switch (get_next_value_type()) {
                 case ARRAY -> parse_array();
@@ -335,19 +369,16 @@ public class JsonParser {
             if (json_element == null || m_state != ParserState.TERMINATED)
                 throw new RuntimeException("Invalid JSON file!");
 
-            try {
-                if (m_stream.available() > 0) {
-                    // Remaining characters must be whitespaces.
-                    if (get_next_value_type() != JsonElement.JsonType.UNKNOWN)
-                        throw new RuntimeException("Invalid JSON file!");
-                }
-            } catch (IOException ioe)  {
-                throw new RuntimeException(ioe);
+            if (!eof_reached()) {
+                // Remaining characters must be whitespaces.
+                if (get_next_value_type() != JsonElement.JsonType.UNKNOWN)
+                    throw new RuntimeException("Invalid JSON file!");
             }
+
             return json_element;
         } catch (RuntimeException re) {
             String message = re.getMessage();
-            String vicinity = new String(read(20)).replaceAll("\\s", "");
+            String vicinity = new String(read_string(20)).replaceAll("\\s", "");
             if (!vicinity.isEmpty())
                 message += "\nFailed before reaching here: `" + vicinity + "`";
             System.err.println(message);
@@ -355,16 +386,18 @@ public class JsonParser {
         }
     }
 
-    private static void dispose (final JsonParser parser) {
+    private static void dispose (final JsonParser parser)
+    {
         try {
             if (parser != null)
-                parser.m_stream.close();
+                parser.m_reader.close();
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
     }
 
-    public static JsonElement parse (final Path file_path) {
+    public static JsonElement parse (final Path file_path)
+    {
         JsonParser parser = null;
         try {
             parser = new JsonParser(file_path);
@@ -376,7 +409,8 @@ public class JsonParser {
         }
     }
 
-    public static JsonElement parse (final String json) {
+    public static JsonElement parse (final String json)
+    {
         return (new JsonParser(json)).parse();
     }
 }
