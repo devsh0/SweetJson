@@ -129,6 +129,7 @@ public class JsonParser {
                 case ' ':
                 case '\r':
                 case '\n':
+                case '\b':
                 case '\t':
                 case '\f':
                     read();
@@ -184,8 +185,21 @@ public class JsonParser {
             char current = read();
             switch (current) {
                 case '\\':
-                    builder.append(current);
-                    builder.append(read());
+                    switch (read()) {
+                        case '\\' -> builder.append('\\');
+                        case 'n' -> builder.append('\n');
+                        case 'b' -> builder.append('\b');
+                        case 'f' -> builder.append('\f');
+                        case 'r' -> builder.append('\r');
+                        case 't' -> builder.append('\t');
+                        case 'u' -> {
+                            var code_point_str = String.valueOf(read()) + read() + read() + read();
+                            int code_point = Integer.parseInt(code_point_str, 16);
+                            builder.appendCodePoint(code_point);
+                        }
+                        default -> throw new RuntimeException("Unknown escape character!");
+                    }
+
                     break;
                 case '"':
                     return new JsonElement(builder.toString());

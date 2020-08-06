@@ -49,16 +49,9 @@ class JsonParserTest {
     }
 
     @Test
-    // FIXME: strings aren't fully compatible with the standards.
-    // The string parser doesn't handle all the escapes correctly.
-    // This will be improved in the future.
-    void test_parsing_string () {
-        var json = parser("{\"string\": \"some string\"}").parse();
-        assertEquals("some string", json.as_map().get("string").as_string());
-
-        json = parser("{\"string_with_escapes\": \"some\\\"things\\n\\\"\"}").parse();
-        System.out.println(json.as_map().get("string_with_escapes").as_string());
-        assertEquals("some\\\"things\\n\\\"", json.as_map().get("string_with_escapes").as_string());
+    void test_parsing_string_with_escape_sequences () {
+        var json = parser("{\"string\": \"\\\\some\nstring\"}").parse();
+        assertEquals("\\some\nstring", json.as_map().get("string").as_string());
     }
 
     @Test

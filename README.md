@@ -2,7 +2,6 @@ A sweet little JSON serializer/deserializer ideal for personal projects.
 
 ### State of this project
 - Development in progress.
-- Not fully compatible with the specs.
 - Serialization not supported yet.
 
 **Note:** None of the methods described below are thread safe. Concurrency must be manually handled.
