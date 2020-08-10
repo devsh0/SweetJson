@@ -127,7 +127,8 @@ public class DataBindingTest {
     @Test
     void test_binding_with_multiple_type_arguments () {
         SweetJson.register_binder(Typedef.wrap(Map.class), (element, definition, bag) -> {
-            // Type Argument 1 is always string.
+            // Type argument 1 is string in this case. If more complex
+            // types are required, the json key (string) is all we have.
             var type_arg2 = definition.second_type_arg();
             var map = element.as_map();
             var model = new HashMap<>();

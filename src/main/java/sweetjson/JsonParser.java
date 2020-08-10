@@ -258,7 +258,6 @@ public class JsonParser {
 
     private JsonElement parse_array ()
     {
-        push_depth();
         final int BEGIN = 0, SEEN_OPEN = 1, SEEN_CLOSE = 2, SEEN_COMA = 3, SEEN_ELEMENT = 4;
         int state = BEGIN;
         List<JsonElement> list = new ArrayList<>();
@@ -270,6 +269,7 @@ public class JsonParser {
                     consume_whitespaces();
                     if (read() != '[')
                         throw new RuntimeException("Expected `[`!");
+                    push_depth();
                     state = SEEN_OPEN;
                     break;
                 case SEEN_OPEN:
@@ -306,7 +306,6 @@ public class JsonParser {
 
     private JsonElement parse_object ()
     {
-        push_depth();
         final int BEGIN = 0, SEEN_OPEN = 1, SEEN_KEY = 2, SEEN_COLON = 3;
         final int SEEN_VALUE = 4, SEEN_COMA = 5, SEEN_CLOSE = 6;
         int state = BEGIN;
@@ -320,6 +319,7 @@ public class JsonParser {
                     consume_whitespaces();
                     if (read() != '{')
                         throw new RuntimeException("Expected `{`!");
+                    push_depth();
                     state = SEEN_OPEN;
                     break;
                 case SEEN_OPEN:
@@ -392,7 +392,7 @@ public class JsonParser {
             return json_element;
         } catch (RuntimeException re) {
             String message = re.getMessage();
-            String vicinity = new String(read_string(20)).replaceAll("\\s", "");
+            String vicinity = read_string(20).replaceAll("\\s", "");
             if (!vicinity.isEmpty())
                 message += "\nFailed before reaching here: `" + vicinity + "`";
             System.err.println(message);
