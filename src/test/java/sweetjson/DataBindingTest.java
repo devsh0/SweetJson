@@ -21,7 +21,9 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -53,7 +55,7 @@ public class DataBindingTest {
     void test_binding_to_generic_types () {
         String data = "{\"value\": 24, \"array\": [1], \"list\": [1, 2]}";
         var json = parser(data).parse();
-        var object = (C1<Byte>)json.bind_to_generic(C1.class, Byte.class);
+        C1<Byte> object = json.bind_to_generic(C1.class, Byte.class);
         assertEquals(object.value.byteValue(), 24);
         assertEquals(object.array[0].byteValue(), 1);
         assertEquals(object.list.get(0).byteValue(), 1);
@@ -68,7 +70,7 @@ public class DataBindingTest {
     void test_binding_to_complex_generic_types () {
         String data = "{\"values\": [[1], [2]]}";
         var json = parser(data).parse();
-        var object = (C2<Byte>)json.bind_to_generic(C2.class, Byte.class);
+        C2<Byte> object = json.bind_to_generic(C2.class, Byte.class);
         assertEquals(object.values.get(0).get(0).byteValue(), 1);
         assertEquals(object.values.get(1).get(0).byteValue(), 2);
     }
@@ -119,15 +121,27 @@ public class DataBindingTest {
     static class C5<A, B> {
         private B b;
         private A a;
+        private Map<A, B> map;
     }
 
     @Test
     void test_binding_with_multiple_type_arguments () {
-        String data = "{\"a\":\"A\", \"b\":2}";
+        SweetJson.register_binder(Typedef.wrap(Map.class), (element, definition, bag) -> {
+            // Type Argument 1 is always string.
+            var type_arg2 = definition.second_type_arg();
+            var map = element.as_map();
+            var model = new HashMap<>();
+            for (var entry : map.entrySet())
+                model.put(entry.getKey(), entry.getValue().bind_to(type_arg2));
+            return model;
+        });
+        String data = "{\"a\":\"A\", \"b\":2, \"map\": {\"key1\": 40, \"key2\": 50}}";
         var json = parser(data).parse();
-        var object = (C5<String, Integer>)json.bind_to_generic(C5.class, String.class, Integer.class);
-        assertEquals(object.a, "A");
-        assertEquals(object.b, 2);
+        C5<String, Integer> object = json.bind_to_generic(C5.class, String.class, Integer.class);
+        assertEquals("A", object.a);
+        assertEquals(2, object.b);
+        assertEquals(40, object.map.get("key1"));
+        assertEquals(50, object.map.get("key2"));
     }
 
     @Test
