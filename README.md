@@ -41,8 +41,9 @@ public class Main {
 }
 ```
 
-Data binding is easy. The `parse` method returns a `JsonElement` which can be mapped to a data model by calling
-the `bind_to` method on `JsonElement`. Partial bindings are also supported.
+#### Data Binding
+The `parse` method returns a `JsonElement` which can be mapped to a data model by calling the `bind_to` method on
+`JsonElement`. Partial bindings are also supported.
 
 _data.json_
 ```json
@@ -76,6 +77,7 @@ corresponds to fields in the JSON string. Furthermore, the writer will leave out
 JSON fields that are `null` are by default ignored and there is no way to change that behavior as of now. Extra
 fields in the JSON string are skipped if there are no members corresponding to that key.
 
+#### Custom Binders
 We can specify custom binders to handle mapping to objects of types that do not conform to the structure of JSON
 data:
 
@@ -103,7 +105,7 @@ Here we are hardcoding `ArrayList` as the container. If that's not acceptable, y
 inspect it before creating a collection instance. The data stored in the bag is guaranteed to persist throughout the
 lifetime of a binding request.
 
-### Generic Types
+### Binding to generic types
 
 SweetJson provides basic deserialization support for generic types. Here's a (bad) example:
 
@@ -137,8 +139,8 @@ class Server <T> {
     }
 }
 
+@SuppressWarnings("unchecked")
 public class Main {
-    @SuppressWarnings("unchecked")
     public static void main (String[] args) {
         var server_element = JsonParser.parse(Paths.get("server_response.json"));
         // bind_to_generic(Prototype.class, Typearg1.class...TypeargN.class)
@@ -147,6 +149,8 @@ public class Main {
     }
 }
 ```
+
+Nested parameterized types, such as `List<MyParameterizedType<String>>` are not supported yet.
 
 **Note:** Documentation is updated from time to time as the development proceeds. But the README usually won't
 reflect the latest API changes.
