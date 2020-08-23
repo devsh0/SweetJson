@@ -1,4 +1,4 @@
-package sweetjson;/*
+/*
  * Copyright (C) 2010 Google Inc.
  * Copyright (C) 2020 Devashish Jaiswal.
  *
@@ -14,6 +14,8 @@ package sweetjson;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package sweetjson;
 
 import org.junit.jupiter.api.Test;
 
