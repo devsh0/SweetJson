@@ -60,13 +60,16 @@ class User {
     private int user_id;
     private String firstname;
     private String lastname;
+
+    public String get_firstname () { return firstname; }
+    // ...
 }
 
 public class Main {
     public static void main (String[] args) throws IOException {
         var json = Files.readString(Paths.get("data.json"));
         var user = JsonParser.parse(json).bind_to(User.class);
-        System.out.println(user.firstname); // prints "John"
+        System.out.println(user.get_firstname()); // prints "John"
     }
 }
 ```
