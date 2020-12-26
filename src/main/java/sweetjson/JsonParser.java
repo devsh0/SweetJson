@@ -20,7 +20,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,14 +33,14 @@ public class JsonParser {
 
     private final BufferedReader m_reader;
 
-    public JsonParser (final Path file_path) throws IOException
+    public JsonParser (Path file_path) throws IOException
     {
-        var stream = Files.newInputStream(file_path, StandardOpenOption.READ);
-        m_reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        this(Files.readString(file_path));
     }
 
-    public JsonParser (final String json)
+    public JsonParser (String json)
     {
+        json = json.strip();
         var stream = new InputStreamReader(new ByteArrayInputStream(json.getBytes()), StandardCharsets.UTF_8);
         m_reader = new BufferedReader(stream);
     }
@@ -92,34 +91,20 @@ public class JsonParser {
 
     private void push_depth ()
     {
-        if (m_state == ParserState.INITIATED) {
-            m_depth++;
-            return;
-        }
-
-        if (m_state == ParserState.UNINITIATED) {
-            m_state = ParserState.INITIATED;
-            m_depth++;
-            return;
-        }
-
         if (m_state == ParserState.TERMINATED)
-            throw new RuntimeException("Value appeared after parsing ended!");
+            throw new RuntimeException("Unexpected parser state!");
+
+        m_depth++;
+        m_state = ParserState.INITIATED;
     }
 
     private void pop_depth ()
     {
-        if (m_state == ParserState.INITIATED) {
-            if (m_depth <= 0)
-                throw new RuntimeException("Invalid parser state!");
+        if (m_state == ParserState.UNINITIATED || m_state == ParserState.TERMINATED)
+            throw new RuntimeException("Unexpected parser state!");
 
-            m_depth--;
-            if (m_depth == 0)
-                m_state = ParserState.TERMINATED;
-            return;
-        }
-
-        throw new RuntimeException("Invalid parser state!");
+        m_depth--;
+        m_state = m_depth == 0 ? ParserState.TERMINATED : m_state;
     }
 
     private void consume_whitespaces ()
@@ -380,14 +365,8 @@ public class JsonParser {
                 default -> null;
             };
 
-            if (json_element == null || m_state != ParserState.TERMINATED)
+            if (json_element == null || m_state != ParserState.TERMINATED || !eof_reached())
                 throw new RuntimeException("Invalid JSON file!");
-
-            if (!eof_reached()) {
-                // Remaining characters must be whitespaces.
-                if (get_next_value_type() != JsonElement.JsonType.UNKNOWN)
-                    throw new RuntimeException("Invalid JSON file!");
-            }
 
             return json_element;
         } catch (RuntimeException re) {
