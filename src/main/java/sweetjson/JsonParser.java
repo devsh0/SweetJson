@@ -176,6 +176,7 @@ public class JsonParser {
                         case 'b' -> builder.append('\b');
                         case 'f' -> builder.append('\f');
                         case 'r' -> builder.append('\r');
+                        case '"' -> builder.append('"');
                         case 't' -> builder.append('\t');
                         case 'u' -> {
                             var code_point_str = String.valueOf(read()) + read() + read() + read();
