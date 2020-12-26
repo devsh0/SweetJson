@@ -90,7 +90,11 @@ public class Main {
         var json = Files.readString(Paths.get("temp.json"));
         
         // Register a binder for `java.util.List`.
-        SweetJson.register_binder(Typedef.wrap(List.class), (element, definition, bag) -> {
+        // `element` is the JSON element that we are dealing with.
+        // `typedef` describes the type of the variable to which the element will be bound.
+        // `bag` contains data that maybe useful to the binder (such as hints for implementation
+        // to be used as the model for this binding).
+        SweetJson.register_binder(Typedef.wrap(List.class), (element, typedef, bag) -> {
             var model = new ArrayList<>();
             var arg = definition.first_type_arg();
             var list = element.as_list();
@@ -104,8 +108,8 @@ public class Main {
     }
 }
 ```
-Here we are hardcoding `ArrayList` as the container. If that's not acceptable, you can insert data into the bag and
-inspect it before creating a collection instance. The data stored in the bag is guaranteed to persist throughout the
+Here we are hardcoding `ArrayList` as the container. If that's not acceptable, you can insert data into the `bag` and
+inspect it before creating a collection instance. The data stored in the `bag` is guaranteed to persist throughout the
 lifetime of a binding request.
 
 ### Binding to generic types
