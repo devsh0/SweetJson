@@ -127,6 +127,31 @@ public class JsonValue
         return (long) as_double();
     }
 
+    public final boolean is_number ()
+    {
+        return get_type() == JsonType.NUMBER;
+    }
+
+    public final boolean is_boolean ()
+    {
+        return get_type() == JsonType.BOOL;
+    }
+
+    public final boolean is_string ()
+    {
+        return get_type() == JsonType.STRING;
+    }
+
+    public final boolean is_array ()
+    {
+        return get_type() == JsonType.ARRAY;
+    }
+
+    public final boolean is_object ()
+    {
+        return get_type() == JsonType.OBJECT;
+    }
+
     public final boolean as_bool ()
     {
         verify_type_or_throw(JsonType.BOOL, "boolean");
