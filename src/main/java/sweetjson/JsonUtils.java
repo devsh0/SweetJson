@@ -23,7 +23,8 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JsonSerializationUtils {
+public class JsonUtils
+{
     public static Map<String, Field> get_serializable_fields (final Class<?> prototype) {
         var fields = prototype.getDeclaredFields();
         Map<String, Field> filtered = new HashMap<>();

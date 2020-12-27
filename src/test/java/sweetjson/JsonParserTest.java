@@ -21,14 +21,17 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class JsonParserTest {
+class JsonParserTest
+{
 
-    private static JsonParser parser (final String json) {
+    private static JsonParser parser (final String json)
+    {
         return new JsonParser(json);
     }
 
     @Test
-    void test_parsing_object () {
+    void test_parsing_object ()
+    {
         var json = parser("{}").parse();
         assertEquals(json.get_type(), JsonElement.JsonType.OBJECT);
         assertTrue(json.as_map().isEmpty());
@@ -38,7 +41,8 @@ class JsonParserTest {
     }
 
     @Test
-    void test_parsing_array () {
+    void test_parsing_array ()
+    {
         var json = parser("[]").parse();
         assertEquals(json.get_type(), JsonElement.JsonType.ARRAY);
         assertTrue(json.as_list().isEmpty());
@@ -51,25 +55,29 @@ class JsonParserTest {
     }
 
     @Test
-    void test_parsing_string_with_escape_sequences () {
+    void test_parsing_string_with_escape_sequences ()
+    {
         var json = parser("{\"string\": \"\\\\some\nstring\"}").parse();
         assertEquals("\\some\nstring", json.as_map().get("string").as_string());
     }
 
     @Test
-    void test_parsing_null () {
+    void test_parsing_null ()
+    {
         var json = parser("{\"null\": null}").parse();
         assertNull(json.as_map().get("null").as_object());
     }
 
     @Test
-    void test_empty_string () {
+    void test_empty_string ()
+    {
         // FIXME: We need to throw better exceptions.
         assertThrows(RuntimeException.class, () -> parser("").parse());
     }
 
     @Test
-    public void test_doubles () {
+    public void test_doubles ()
+    {
         String json = "[-0.0,"
                 + "1.0,"
                 + "1.7976931348623157E308,"
@@ -92,7 +100,8 @@ class JsonParserTest {
     }
 
     @Test
-    void test_longs () {
+    void test_longs ()
+    {
         String json = "[0,0,0,"
                 + "1,1,1,"
                 + "-1,-1,-1,"
@@ -113,18 +122,21 @@ class JsonParserTest {
     }
 
     @Test
-    void test_boolean () {
+    void test_boolean ()
+    {
         var json = parser("[true, false]").parse();
         assertTrue(json.as_list().get(0).as_bool());
         assertFalse(json.as_list().get(1).as_bool());
     }
 
-    private void assert_not_number (final String number) {
+    private void assert_not_number (final String number)
+    {
         assertThrows(RuntimeException.class, () -> parser("[" + number + "]").parse());
     }
 
     @Test
-    void test_malformed_numbers () {
+    void test_malformed_numbers ()
+    {
         assert_not_number("-");
         assert_not_number(".");
 
@@ -163,45 +175,53 @@ class JsonParserTest {
     }
 
     @Test
-    public void test_missing_value () {
+    public void test_missing_value ()
+    {
         assertThrows(RuntimeException.class, () -> parser("{\"a\":}").parse());
     }
 
     @Test
-    void test_premature_end_of_input () {
+    void test_premature_end_of_input ()
+    {
         assertThrows(RuntimeException.class, () -> parser("{\"a\": 1,}").parse());
     }
 
     @Test
-    void test_unquoted_keys () {
+    void test_unquoted_keys ()
+    {
         assertThrows(RuntimeException.class, () -> parser("{a:true}").parse());
     }
 
     @Test
-    void test_single_quoted_keys () {
+    void test_single_quoted_keys ()
+    {
         assertThrows(RuntimeException.class, () -> parser("{'a':true}").parse());
     }
 
     @Test
-    void test_multiple_top_level_values () {
+    void test_multiple_top_level_values ()
+    {
         assertThrows(RuntimeException.class, () -> parser("[][]").parse());
         assertThrows(RuntimeException.class, () -> parser("{}{}").parse());
     }
 
     @Test
-    void test_missing_top_level_value () {
+    void test_missing_top_level_value ()
+    {
         assertThrows(RuntimeException.class, () -> parser("\"a\": \"1\"").parse());
     }
 
     @Test
-    void test_unterminated_array () {
+    void test_unterminated_array ()
+    {
         assertThrows(RuntimeException.class, () -> parser("{\n" +
                 "  \"a\": [1, 2\n" +
                 "}").parse());
     }
 
     @Test
-    void test_unterminated_object () {
+    void test_unterminated_object ()
+    {
         assertThrows(RuntimeException.class, () -> parser("{\n" +
                 "  \"a\": {\"b\":  \"c\",\n" +
                 "    \"d\": \"e\"\n" +
@@ -209,22 +229,26 @@ class JsonParserTest {
     }
 
     @Test
-    void test_unterminated_string () {
+    void test_unterminated_string ()
+    {
         assertThrows(RuntimeException.class, () -> parser("{\"a\":  \"an unterminated string}").parse());
     }
 
     @Test
-    void test_empty_key_string () {
+    void test_empty_key_string ()
+    {
         assertThrows(RuntimeException.class, () -> parser("{\"\": 1}").parse());
     }
 
     @Test
-    void test_empty_value_string () {
+    void test_empty_value_string ()
+    {
         assertTrue(parser("{\"a\": \"\"}").parse().as_map().get("a").as_string().isEmpty());
     }
 
     @Test
-    void test_extra_values_in_object () {
+    void test_extra_values_in_object ()
+    {
         assertThrows(RuntimeException.class, () -> parser("{\"a\": 1,2}").parse());
     }
 }

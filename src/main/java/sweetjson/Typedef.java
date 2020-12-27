@@ -34,7 +34,7 @@ public class Typedef<T> {
         m_type_arguments = type_arguments;
         if (klass.toGenericString().contains("<") && type_arguments.length > 0) {
             m_is_generic_type = true;
-            m_type_parameter_map = JsonSerializationUtils.get_type_argument_map(klass, type_arguments);
+            m_type_parameter_map = JsonUtils.get_type_argument_map(klass, type_arguments);
         } else m_type_parameter_map = new HashMap<>();
     }
 

@@ -18,24 +18,26 @@ package sweetjson;
 
 import java.lang.reflect.Array;
 
-public class JsonArrayBinder<T> implements JsonBinder<T> {
+public class JsonArrayBinder<T> implements JsonBinder<T>
+{
     public static final JsonBinder<?> INSTANCE = new JsonArrayBinder<>();
 
     @SuppressWarnings("unchecked")
-    public T construct (final JsonElement element, final Typedef<T> definition, final Bag bag) {
-        //if (element.is_null()) return null;
+    public T construct (final JsonElement element, final Typedef<T> definition, final Bag bag)
+    {
         final var list = element.as_list();
         final var component_type = definition.klass().componentType();
         int size_without_null = 0;
         for (var entry : list) size_without_null += entry.is_null() ? 0 : 1;
         final var model = Array.newInstance(component_type, size_without_null);
         int i = 0, j = 0;
-        while (j < list.size()) {
+        while (j < list.size())
+        {
             var entry = list.get(j);
             if (!entry.is_null())
                 Array.set(model, i++, entry.bind_to(component_type, bag));
             j++;
         }
-        return (T)model;
+        return (T) model;
     }
 }

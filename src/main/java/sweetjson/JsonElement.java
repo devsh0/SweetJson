@@ -21,8 +21,10 @@ import java.util.Map;
 import java.util.Objects;
 
 @SuppressWarnings("unchecked")
-public class JsonElement {
-    public enum JsonType {
+public class JsonElement
+{
+    public enum JsonType
+    {
         UNKNOWN,
         STRING,
         NUMBER,
@@ -38,7 +40,8 @@ public class JsonElement {
     private Map<String, JsonElement> m_as_map = null;
     private List<JsonElement> m_as_list = null;
 
-    JsonElement (final Object value) {
+    JsonElement (final Object value)
+    {
         m_value = value;
         if (value instanceof String)
             m_type = JsonType.STRING;
@@ -48,96 +51,117 @@ public class JsonElement {
             m_type = JsonType.BOOL;
         else if (value == null)
             m_type = JsonType.NULL;
-        else if (value instanceof Map) {
+        else if (value instanceof Map)
+        {
             m_as_map = (Map<String, JsonElement>) value;
             m_type = JsonType.OBJECT;
-        } else if (value instanceof List) {
+        } else if (value instanceof List)
+        {
             m_as_list = (List<JsonElement>) value;
             m_type = JsonType.ARRAY;
         } else throw new RuntimeException("Incompatible value type `" + value.getClass().getName() + "`");
     }
 
-    public boolean is_null () {
+    public boolean is_null ()
+    {
         return as_object() == null;
     }
 
-    private void verify_type_or_throw (final JsonType type, final String type_str) {
+    private void verify_type_or_throw (final JsonType type, final String type_str)
+    {
         if (m_type != type)
             throw new RuntimeException("Cannot convert " + m_type + " to " + type_str + "!");
     }
 
-    public final List<JsonElement> as_list () {
+    public final List<JsonElement> as_list ()
+    {
         verify_type_or_throw(JsonType.ARRAY, "List");
         return m_as_list;
     }
 
-    public final Map<String, JsonElement> as_map () {
+    public final Map<String, JsonElement> as_map ()
+    {
         verify_type_or_throw(JsonType.OBJECT, "Map");
         return m_as_map;
     }
 
-    public final String as_string () {
+    public final String as_string ()
+    {
         verify_type_or_throw(JsonType.STRING, "String");
         return (String) m_value;
     }
 
-    public final double as_double () {
+    public final double as_double ()
+    {
         verify_type_or_throw(JsonType.NUMBER, "double");
         return (Double) m_value;
     }
 
-    public final float as_float () {
+    public final float as_float ()
+    {
         return (float) as_double();
     }
 
-    public final int as_int () {
+    public final int as_int ()
+    {
         return (int) as_double();
     }
 
-    public final char as_char () {
+    public final char as_char ()
+    {
         return (char) as_int();
     }
 
-    public final byte as_byte () {
+    public final byte as_byte ()
+    {
         return (byte) as_int();
     }
 
-    public final short as_short () {
+    public final short as_short ()
+    {
         return (short) as_int();
     }
 
-    public final long as_long () {
+    public final long as_long ()
+    {
         return (long) as_double();
     }
 
-    public final boolean as_bool () {
+    public final boolean as_bool ()
+    {
         verify_type_or_throw(JsonType.BOOL, "boolean");
         return (Boolean) m_value;
     }
 
-    public final Object as_object () {
+    public final Object as_object ()
+    {
         return m_value;
     }
 
-    public final JsonType get_type () {
+    public final JsonType get_type ()
+    {
         return m_type;
     }
 
-    public final boolean is_primitive () {
+    public final boolean is_primitive ()
+    {
         return m_type != JsonType.ARRAY && m_type != JsonType.OBJECT && m_type != JsonType.UNKNOWN;
     }
 
-    public final <T> T bind_to (final Class<T> prototype) {
+    public final <T> T bind_to (final Class<T> prototype)
+    {
         var definition = Typedef.wrap(prototype);
         return SweetJson.get_binder(definition).construct(this, definition, Bag.empty());
     }
 
-    public final <T> T bind_to (final Class<T> prototype, final Bag bag) {
+    public final <T> T bind_to (final Class<T> prototype, final Bag bag)
+    {
         var definition = Typedef.wrap(prototype);
         return SweetJson.get_binder(definition).construct(this, definition, Objects.requireNonNull(bag));
     }
 
-    public final <T> T bind_to_generic (final Class<T> prototype, Class<?>... type_args) {
+    public final <T> T bind_to_generic (final Class<T> prototype, Class<?>... type_args)
+    {
         var definition = Typedef.<T>builder()
                 .set_klass(prototype)
                 .set_type_args(type_args)
