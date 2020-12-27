@@ -22,7 +22,7 @@ public class JsonPrimitiveBinder<T> implements JsonBinder<T>
 
     @SuppressWarnings("unchecked")
     @Override
-    public T construct (final JsonElement element, final Typedef<T> definition, final Bag bag)
+    public T construct (final JsonValue element, final Typedef<T> definition, final Bag bag)
     {
         var type = element.get_type();
         return switch (type)

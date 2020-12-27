@@ -36,7 +36,7 @@ public class JsonUtils
         return filtered;
     }
 
-    public static Object get_number_field (final JsonElement element, final Class<?> klass) {
+    public static Object get_number_field (final JsonValue element, final Class<?> klass) {
         var number = element.as_double();
         var class_name = klass.getName().toLowerCase();
         if (class_name.contains("byte"))

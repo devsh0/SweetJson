@@ -33,7 +33,7 @@ class JsonParserTest
     void test_parsing_object ()
     {
         var json = parser("{}").parse();
-        assertEquals(json.get_type(), JsonElement.JsonType.OBJECT);
+        assertEquals(json.get_type(), JsonValue.JsonType.OBJECT);
         assertTrue(json.as_map().isEmpty());
 
         json = parser("{\"a\": \"b\"}").parse();
@@ -44,7 +44,7 @@ class JsonParserTest
     void test_parsing_array ()
     {
         var json = parser("[]").parse();
-        assertEquals(json.get_type(), JsonElement.JsonType.ARRAY);
+        assertEquals(json.get_type(), JsonValue.JsonType.ARRAY);
         assertTrue(json.as_list().isEmpty());
 
         json = parser("[1, 2]").parse();

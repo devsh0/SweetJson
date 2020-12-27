@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @SuppressWarnings("unchecked")
-public class JsonElement
+public class JsonValue
 {
     public enum JsonType
     {
@@ -37,10 +37,10 @@ public class JsonElement
     private final Object m_value;
     private final JsonType m_type;
 
-    private Map<String, JsonElement> m_as_map = null;
-    private List<JsonElement> m_as_list = null;
+    private Map<String, JsonValue> m_as_map = null;
+    private List<JsonValue> m_as_list = null;
 
-    JsonElement (final Object value)
+    JsonValue (final Object value)
     {
         m_value = value;
         if (value instanceof String)
@@ -53,11 +53,11 @@ public class JsonElement
             m_type = JsonType.NULL;
         else if (value instanceof Map)
         {
-            m_as_map = (Map<String, JsonElement>) value;
+            m_as_map = (Map<String, JsonValue>) value;
             m_type = JsonType.OBJECT;
         } else if (value instanceof List)
         {
-            m_as_list = (List<JsonElement>) value;
+            m_as_list = (List<JsonValue>) value;
             m_type = JsonType.ARRAY;
         } else throw new RuntimeException("Incompatible value type `" + value.getClass().getName() + "`");
     }
@@ -73,13 +73,13 @@ public class JsonElement
             throw new RuntimeException("Cannot convert " + m_type + " to " + type_str + "!");
     }
 
-    public final List<JsonElement> as_list ()
+    public final List<JsonValue> as_list ()
     {
         verify_type_or_throw(JsonType.ARRAY, "List");
         return m_as_list;
     }
 
-    public final Map<String, JsonElement> as_map ()
+    public final Map<String, JsonValue> as_map ()
     {
         verify_type_or_throw(JsonType.OBJECT, "Map");
         return m_as_map;
