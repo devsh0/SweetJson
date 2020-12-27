@@ -1,6 +1,7 @@
 A sweet little JSON serializer/deserializer ideal for personal projects.
 
 ### State of this project
+- Quick and dirty implementation. Don't expect 100% spec compliance or off-the-charts performance.
 - Development in progress.
 - Serialization not supported yet.
 
@@ -29,21 +30,20 @@ _Main.java_
 ```java
 public class Main {
     public static void main(String[] args) {
-        // Get data as map.
         var json = JsonParser.parse(Paths.get("data.json")).as_map();
-        for (JsonElement element : json.get("people").as_list()) {
-            var person = element.as_map();
+        for (JsonValue value : json.get("people").as_list()) {
+            var person = value.as_map();
             System.out.println(person.get("firstname").as_string());
             System.out.println(person.get("lastname").as_string());
-            System.out.println(person.get("skills").as_list().size());
+            System.out.println(person.get("skills").as_list().get(0));
         }
     }
 }
 ```
 
 #### Data Binding
-The `parse` method returns a `JsonElement` which can be mapped to a data model by calling the `bind_to` method on
-`JsonElement`. Partial bindings are also supported.
+The `parse` method returns a `JsonValue` which can be mapped to a data model by calling the `bind_to` method on
+it. Partial bindings are also supported.
 
 _data.json_
 ```json
@@ -75,8 +75,8 @@ public class Main {
 ```
 
 Primitive types as well as parameterized and array types are supported. Note that custom annotations aren't
-required (will be added in the future, hopefully soon). The binder will write values to fields whose name
-corresponds to fields in the JSON string. Furthermore, the writer will leave out transient and inherited fields.
+required (will be added in the future, hopefully soon). The binder will write values to field whose name
+corresponds to a field in the JSON string. Furthermore, the writer will leave out transient and inherited fields.
 JSON fields that are `null` are by default ignored and there is no way to change that behavior as of now. Extra
 fields in the JSON string are skipped if there are no members corresponding to that key.
 
