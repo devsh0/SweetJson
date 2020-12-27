@@ -20,17 +20,21 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class JsonParser {
-    private enum ParserState {UNINITIATED, INITIATED, TERMINATED}
+public class JsonParser
+{
+    private static final List<Character> whitespaces = List.of(' ', '\r', '\n', '\b', '\t', '\f');
+
+    private enum ParserState
+    {
+        UNINITIATED,
+        INITIATED,
+        TERMINATED
+    }
 
     private ParserState m_state = ParserState.UNINITIATED;
     private int m_depth = 0;
-
     private final BufferedReader m_reader;
 
     public JsonParser (Path file_path) throws IOException
@@ -47,14 +51,69 @@ public class JsonParser {
 
     private char read ()
     {
-        try {
+        try
+        {
             int read = m_reader.read();
-            if (read == -1)
-                throw new RuntimeException("Attempted reading beyond EOF!");
+            throw_if(read == -1, "Attempted reading beyond EOF!");
             return (char) read;
-        } catch (IOException ioe) {
+        } catch (IOException ioe)
+        {
             throw new RuntimeException("Failed to parse JSON!");
         }
+    }
+
+    private char peek ()
+    {
+        try
+        {
+            m_reader.mark(1);
+            char next = read();
+            m_reader.reset();
+            return next;
+        } catch (IOException ioe)
+        {
+            throw new RuntimeException("Failed to parse JSON!");
+        }
+    }
+
+    private void throw_if (boolean condition, String message)
+    {
+        if (condition)
+            throw new RuntimeException(message);
+    }
+
+    private RuntimeException expected (char... any_of)
+    {
+        Objects.requireNonNull(any_of, "Unexpected null argument!");
+        throw_if(any_of.length == 0, "Unexpected empty argument!");
+        StringBuilder message = new StringBuilder("Expected [");
+        for (char ch : any_of)
+            message.append("`").append(ch).append("`,");
+        message.append("]");
+        return new RuntimeException(message.toString());
+    }
+
+    private char read_or_throw (char... any_of)
+    {
+        Objects.requireNonNull(any_of, "Unexpected null argument!");
+        throw_if(any_of.length == 0, "Unexpected empty argument!");
+        var next = peek();
+        for (char ch : any_of)
+        {
+            if (next == ch)
+                return read();
+        }
+        throw expected(any_of);
+    }
+
+    private boolean read_on_match (char ch)
+    {
+        if (peek() == ch)
+        {
+            read();
+            return true;
+        }
+        return false;
     }
 
     private String read_string (int length)
@@ -67,68 +126,46 @@ public class JsonParser {
 
     private boolean eof_reached ()
     {
-        try {
+        try
+        {
             m_reader.mark(1);
             var next = m_reader.read();
             m_reader.reset();
             return next == -1;
-        } catch (IOException ioe) {
+        } catch (IOException ioe)
+        {
             throw new RuntimeException(ioe);
-        }
-    }
-
-    private char peek ()
-    {
-        try {
-            m_reader.mark(1);
-            char next = read();
-            m_reader.reset();
-            return next;
-        } catch (IOException ioe) {
-            throw new RuntimeException("Failed to parse JSON!");
         }
     }
 
     private void push_depth ()
     {
-        if (m_state == ParserState.TERMINATED)
-            throw new RuntimeException("Unexpected parser state!");
-
+        boolean bad_state = m_state == ParserState.TERMINATED;
+        throw_if(bad_state, "Unexpected parser state!");
         m_depth++;
         m_state = ParserState.INITIATED;
     }
 
     private void pop_depth ()
     {
-        if (m_state == ParserState.UNINITIATED || m_state == ParserState.TERMINATED)
-            throw new RuntimeException("Unexpected parser state!");
-
+        boolean bad_state = m_state == ParserState.UNINITIATED || m_state == ParserState.TERMINATED;
+        throw_if(bad_state, "Unexpected parser state!");
         m_depth--;
         m_state = m_depth == 0 ? ParserState.TERMINATED : m_state;
     }
 
     private void consume_whitespaces ()
     {
-        while (true) {
-            switch (peek()) {
-                case ' ':
-                case '\r':
-                case '\n':
-                case '\b':
-                case '\t':
-                case '\f':
-                    read();
-                    break;
-                default:
-                    return;
-            }
-        }
+        if (eof_reached()) return;
+        while (whitespaces.contains(peek()))
+            read();
     }
 
     private JsonElement.JsonType get_next_value_type ()
     {
         char next = peek();
-        switch (next) {
+        switch (next)
+        {
             case '{':
                 return JsonElement.JsonType.OBJECT;
             case '[':
@@ -148,29 +185,31 @@ public class JsonParser {
 
     private JsonElement parse_element (final JsonElement.JsonType type)
     {
-        return switch (type) {
-            case STRING -> parse_string();
-            case NUMBER -> parse_number();
-            case BOOL -> parse_boolean();
-            case ARRAY -> parse_array();
-            case OBJECT -> parse_object();
-            case NULL -> parse_null();
-            default -> throw new RuntimeException("Element of UNKNOWN type cannot be parsed!");
-        };
+        return switch (type)
+                {
+                    case STRING -> parse_string();
+                    case NUMBER -> parse_number();
+                    case BOOL -> parse_boolean();
+                    case ARRAY -> parse_array();
+                    case OBJECT -> parse_object();
+                    case NULL -> parse_null();
+                    default -> throw new RuntimeException("Element of UNKNOWN type cannot be parsed!");
+                };
     }
 
     private JsonElement parse_string ()
     {
-        if (m_state != ParserState.INITIATED)
-            throw new RuntimeException("Invalid parser state!");
-
+        throw_if(m_state != ParserState.INITIATED, "Invalid parser state!");
         StringBuilder builder = new StringBuilder();
-        read(); // consume " at the beginning
-        while (true) {
+        read_or_throw('"'); // consume " at the beginning
+        while (true)
+        {
             char current = read();
-            switch (current) {
+            switch (current)
+            {
                 case '\\':
-                    switch (read()) {
+                    switch (read())
+                    {
                         case '\\' -> builder.append('\\');
                         case 'n' -> builder.append('\n');
                         case 'b' -> builder.append('\b');
@@ -208,9 +247,7 @@ public class JsonParser {
 
     private JsonElement parse_number ()
     {
-        if (m_state != ParserState.INITIATED)
-            throw new RuntimeException("Invalid parser state!");
-
+        throw_if(m_state != ParserState.INITIATED, "Invalid parser state!");
         StringBuilder builder = new StringBuilder();
         while (is_numeric(peek()))
             builder.append(read());
@@ -219,69 +256,69 @@ public class JsonParser {
 
     private JsonElement parse_boolean ()
     {
-        if (m_state != ParserState.INITIATED)
-            throw new RuntimeException("Invalid parser state!");
-
+        throw_if(m_state != ParserState.INITIATED, "Invalid parser state!");
         String literal = read_string(4);
         if (literal.equals("true"))
             return new JsonElement(Boolean.TRUE);
         literal += read();
         if (literal.equals("false"))
             return new JsonElement(Boolean.FALSE);
-        throw new RuntimeException("Invalid literal `" + literal + "` for boolean!");
+        throw new RuntimeException(String.format("Invalid literal `%s`!", literal));
     }
 
     private JsonElement parse_null ()
     {
-        if (m_state != ParserState.INITIATED)
-            throw new RuntimeException("Invalid parser state!");
-
+        throw_if(m_state != ParserState.INITIATED, "Invalid parser state!");
         String literal = read_string(4);
         if (literal.equals("null"))
             return new JsonElement(null);
-        throw new RuntimeException("Invalid literal `" + literal + "` for null!");
+        throw new RuntimeException(String.format("Invalid literal `%s`!", literal));
+    }
+
+    private enum ArrayState
+    {
+        BEGIN,
+        SEEN_OPEN,
+        SEEN_CLOSE,
+        SEEN_COMA,
+        SEEN_ELEMENT
     }
 
     private JsonElement parse_array ()
     {
-        final int BEGIN = 0, SEEN_OPEN = 1, SEEN_CLOSE = 2, SEEN_COMA = 3, SEEN_ELEMENT = 4;
-        int state = BEGIN;
+        ArrayState state = ArrayState.BEGIN;
         List<JsonElement> list = new ArrayList<>();
-
         char next = 0;
-        while (true) {
-            switch (state) {
+
+        for (; ; )
+        {
+            consume_whitespaces();
+            switch (state)
+            {
                 case BEGIN:
-                    consume_whitespaces();
-                    if (read() != '[')
-                        throw new RuntimeException("Expected `[`!");
+                    read_or_throw('[');
                     push_depth();
-                    state = SEEN_OPEN;
+                    state = ArrayState.SEEN_OPEN;
                     break;
                 case SEEN_OPEN:
-                    consume_whitespaces();
-                    if (peek() == ']') {
-                        read();
-                        state = SEEN_CLOSE;
+                    if (read_on_match(']'))
+                    {
+                        state = ArrayState.SEEN_CLOSE;
                         break;
                     }
                     var type = get_next_value_type();
                     list.add(parse_element(type));
-                    state = SEEN_ELEMENT;
+                    state = ArrayState.SEEN_ELEMENT;
                     break;
                 case SEEN_ELEMENT:
-                    consume_whitespaces();
-                    next = read();
-                    if (next != ']' && next != ',')
-                        throw new RuntimeException("Expected `]` or `,`!");
-                    state = next == ']' ? SEEN_CLOSE : SEEN_COMA;
+                    next = read_or_throw(']', ',');
+                    state = next == ']' ? ArrayState.SEEN_CLOSE : ArrayState.SEEN_COMA;
                     break;
                 case SEEN_COMA:
-                    consume_whitespaces();
-                    if (get_next_value_type() == JsonElement.JsonType.UNKNOWN)
-                        throw new RuntimeException("Unknown value type!");
-                    // We didn't...but the state is identical.
-                    state = SEEN_OPEN;
+                    var value_type = get_next_value_type();
+                    throw_if(value_type == JsonElement.JsonType.UNKNOWN, "UNKNOWN value type!");
+                    // We didn't, but the state is identical.
+                    state = ArrayState.SEEN_OPEN;
                     break;
                 case SEEN_CLOSE:
                     pop_depth();
@@ -290,65 +327,63 @@ public class JsonParser {
         }
     }
 
+    private enum ObjectState
+    {
+        BEGIN,
+        SEEN_OPEN,
+        SEEN_KEY,
+        SEEN_COLON,
+        SEEN_VALUE,
+        SEEN_COMA,
+        SEEN_CLOSE
+    }
+
     private JsonElement parse_object ()
     {
-        final int BEGIN = 0, SEEN_OPEN = 1, SEEN_KEY = 2, SEEN_COLON = 3;
-        final int SEEN_VALUE = 4, SEEN_COMA = 5, SEEN_CLOSE = 6;
-        int state = BEGIN;
+        ObjectState state = ObjectState.BEGIN;
         Map<String, JsonElement> map = new HashMap<>();
-
         String key = "";
         char next = 0;
-        while (true) {
-            switch (state) {
+
+        for (; ; )
+        {
+            consume_whitespaces();
+            switch (state)
+            {
                 case BEGIN:
-                    consume_whitespaces();
-                    if (read() != '{')
-                        throw new RuntimeException("Expected `{`!");
+                    read_or_throw('{');
                     push_depth();
-                    state = SEEN_OPEN;
+                    state = ObjectState.SEEN_OPEN;
                     break;
                 case SEEN_OPEN:
-                    consume_whitespaces();
-                    next = peek();
-                    if (next == '}') {
-                        read();
-                        state = SEEN_CLOSE;
+                    if (read_on_match('}'))
+                    {
+                        state = ObjectState.SEEN_CLOSE;
                         break;
                     }
-                    if (next != '"')
-                        throw new RuntimeException("Expected `\"`!");
                     var tmp = parse_string();
                     key = tmp.as_string();
-                    if (key.isEmpty())
-                        throw new RuntimeException("Empty key not allowed!");
-                    state = SEEN_KEY;
+                    throw_if(key.isEmpty(), "Empty key not allowed!");
+                    state = ObjectState.SEEN_KEY;
                     break;
                 case SEEN_KEY:
-                    consume_whitespaces();
-                    if (read() != ':')
-                        throw new RuntimeException("Expected `:`!");
-                    state = SEEN_COLON;
+                    read_or_throw(':');
+                    state = ObjectState.SEEN_COLON;
                     break;
                 case SEEN_COLON:
-                    consume_whitespaces();
                     var type = get_next_value_type();
                     var element = parse_element(type);
                     map.put(key, element);
-                    state = SEEN_VALUE;
+                    state = ObjectState.SEEN_VALUE;
                     break;
                 case SEEN_VALUE:
-                    consume_whitespaces();
-                    next = read();
-                    if (next != ',' && next != '}')
-                        throw new RuntimeException("Expected `,` or `}`!");
-                    state = next == '}' ? SEEN_CLOSE : SEEN_COMA;
+                    next = read_or_throw(',', '}');
+                    state = next == '}' ? ObjectState.SEEN_CLOSE : ObjectState.SEEN_COMA;
                     break;
                 case SEEN_COMA:
-                    consume_whitespaces();
-                    if (get_next_value_type() == JsonElement.JsonType.UNKNOWN)
-                        throw new RuntimeException("Unknown value type!");
-                    state = SEEN_OPEN;
+                    var value_type = get_next_value_type();
+                    throw_if(value_type == JsonElement.JsonType.UNKNOWN, "UNKNOWN value type!");
+                    state = ObjectState.SEEN_OPEN;
                     break;
                 case SEEN_CLOSE:
                     pop_depth();
@@ -359,20 +394,18 @@ public class JsonParser {
 
     public JsonElement parse ()
     {
-        try {
-            JsonElement json_element = switch (get_next_value_type()) {
-                case ARRAY -> parse_array();
-                case OBJECT -> parse_object();
-                default -> null;
-            };
-
-            if (json_element == null || m_state != ParserState.TERMINATED || !eof_reached())
-                throw new RuntimeException("Invalid JSON file!");
-
-            return json_element;
-        } catch (RuntimeException re) {
+        try
+        {
+            var value_type = get_next_value_type();
+            throw_if(value_type == null, "Invalid JSON input!");
+            var element = value_type == JsonElement.JsonType.OBJECT ? parse_object() : parse_array();
+            var bad_state = m_state != ParserState.TERMINATED || !eof_reached();
+            throw_if(bad_state, "Invalid JSON input!");
+            return element;
+        } catch (RuntimeException re)
+        {
             String message = re.getMessage();
-            String vicinity = read_string(20).replaceAll("\\s", "");
+            String vicinity = read_string(20);
             if (!vicinity.isEmpty())
                 message += "\nFailed before reaching here: `" + vicinity + "`";
             System.err.println(message);
@@ -382,10 +415,12 @@ public class JsonParser {
 
     private static void dispose (final JsonParser parser)
     {
-        try {
+        try
+        {
             if (parser != null)
                 parser.m_reader.close();
-        } catch (IOException ioe) {
+        } catch (IOException ioe)
+        {
             throw new RuntimeException(ioe);
         }
     }
@@ -393,12 +428,15 @@ public class JsonParser {
     public static JsonElement parse (final Path file_path)
     {
         JsonParser parser = null;
-        try {
+        try
+        {
             parser = new JsonParser(file_path);
             return parser.parse();
-        } catch (IOException ioe) {
+        } catch (IOException ioe)
+        {
             throw new RuntimeException(ioe);
-        } finally {
+        } finally
+        {
             dispose(parser);
         }
     }
