@@ -183,7 +183,7 @@ public class JsonParser
         return JsonValue.JsonType.UNKNOWN;
     }
 
-    private JsonValue parse_element (final JsonValue.JsonType type)
+    private JsonValue parse_json_value (final JsonValue.JsonType type)
     {
         return switch (type)
                 {
@@ -193,7 +193,7 @@ public class JsonParser
                     case ARRAY -> parse_array();
                     case OBJECT -> parse_object();
                     case NULL -> parse_null();
-                    default -> throw new RuntimeException("Element of UNKNOWN type cannot be parsed!");
+                    default -> throw new RuntimeException("JsonValue of UNKNOWN type cannot be parsed!");
                 };
     }
 
@@ -281,7 +281,7 @@ public class JsonParser
         SEEN_OPEN,
         SEEN_CLOSE,
         SEEN_COMA,
-        SEEN_ELEMENT
+        SEEN_VALUE
     }
 
     private JsonValue parse_array ()
@@ -307,10 +307,10 @@ public class JsonParser
                         break;
                     }
                     var type = get_next_value_type();
-                    list.add(parse_element(type));
-                    state = ArrayState.SEEN_ELEMENT;
+                    list.add(parse_json_value(type));
+                    state = ArrayState.SEEN_VALUE;
                     break;
-                case SEEN_ELEMENT:
+                case SEEN_VALUE:
                     next = read_or_throw(']', ',');
                     state = next == ']' ? ArrayState.SEEN_CLOSE : ArrayState.SEEN_COMA;
                     break;
@@ -372,8 +372,8 @@ public class JsonParser
                     break;
                 case SEEN_COLON:
                     var type = get_next_value_type();
-                    var element = parse_element(type);
-                    map.put(key, element);
+                    var value = parse_json_value(type);
+                    map.put(key, value);
                     state = ObjectState.SEEN_VALUE;
                     break;
                 case SEEN_VALUE:
@@ -398,10 +398,10 @@ public class JsonParser
         {
             var value_type = get_next_value_type();
             throw_if(value_type == null, "Invalid JSON input!");
-            var element = value_type == JsonValue.JsonType.OBJECT ? parse_object() : parse_array();
+            var value = value_type == JsonValue.JsonType.OBJECT ? parse_object() : parse_array();
             var bad_state = m_state != ParserState.TERMINATED || !eof_reached();
             throw_if(bad_state, "Invalid JSON input!");
-            return element;
+            return value;
         } catch (RuntimeException re)
         {
             String message = re.getMessage();

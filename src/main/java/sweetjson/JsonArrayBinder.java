@@ -23,9 +23,9 @@ public class JsonArrayBinder<T> implements JsonBinder<T>
     public static final JsonBinder<?> INSTANCE = new JsonArrayBinder<>();
 
     @SuppressWarnings("unchecked")
-    public T construct (final JsonValue element, final Typedef<T> definition, final Bag bag)
+    public T construct (final JsonValue value, final Typedef<T> definition, final Bag bag)
     {
-        final var list = element.as_list();
+        final var list = value.as_list();
         final var component_type = definition.klass().componentType();
         int size_without_null = 0;
         for (var entry : list) size_without_null += entry.is_null() ? 0 : 1;

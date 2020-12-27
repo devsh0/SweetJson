@@ -36,8 +36,8 @@ public class JsonUtils
         return filtered;
     }
 
-    public static Object get_number_field (final JsonValue element, final Class<?> klass) {
-        var number = element.as_double();
+    public static Object get_number_field (final JsonValue value, final Class<?> klass) {
+        var number = value.as_double();
         var class_name = klass.getName().toLowerCase();
         if (class_name.contains("byte"))
             return (byte) number;
@@ -85,7 +85,7 @@ public class JsonUtils
         return type_parameters_str.split(",");
     }
     
-    public static Map<String, Class<?>> get_type_argument_map (final Class<?> klass, final Class<?>[] arguments) {
+    public static Map<String, Class<?>> get_typearg_map (final Class<?> klass, final Class<?>[] arguments) {
         final Map<String, Class<?>> type_parameter_map = new HashMap<>();
         var type_parameters = get_type_parameter_names(klass);
         if (arguments.length != type_parameters.length) {

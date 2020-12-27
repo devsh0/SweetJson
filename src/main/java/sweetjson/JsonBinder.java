@@ -19,5 +19,5 @@ package sweetjson;
 @FunctionalInterface
 public interface JsonBinder<T>
 {
-    T construct (final JsonValue element, final Typedef<T> definition, final Bag bag);
+    T construct (final JsonValue value, final Typedef<T> definition, final Bag bag);
 }

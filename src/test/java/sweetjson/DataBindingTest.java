@@ -36,10 +36,10 @@ public class DataBindingTest {
 
     @BeforeEach
     void add_list_binder () {
-        SweetJson.register_binder(Typedef.wrap(List.class), (element, typedef, bag) -> {
+        SweetJson.register_binder(Typedef.wrap(List.class), (value, typedef, bag) -> {
             var list = new ArrayList<>();
-            var arg_type = typedef.first_type_arg();
-            var elist = element.as_list();
+            var arg_type = typedef.type_arg1();
+            var elist = value.as_list();
             elist.forEach(entry -> list.add(entry.bind_to(arg_type)));
             return list;
         });
@@ -126,11 +126,11 @@ public class DataBindingTest {
 
     @Test
     void test_binding_with_multiple_type_arguments () {
-        SweetJson.register_binder(Typedef.wrap(Map.class), (element, definition, bag) -> {
+        SweetJson.register_binder(Typedef.wrap(Map.class), (value, definition, bag) -> {
             // Type argument 1 is string in this case. If more complex
             // types are required, the json key (string) is all we have.
-            var type_arg2 = definition.second_type_arg();
-            var map = element.as_map();
+            var type_arg2 = definition.type_arg2();
+            var map = value.as_map();
             var model = new HashMap<>();
             for (var entry : map.entrySet())
                 model.put(entry.getKey(), entry.getValue().bind_to(type_arg2));

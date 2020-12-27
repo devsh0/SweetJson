@@ -34,7 +34,7 @@ public class Typedef<T> {
         m_type_arguments = type_arguments;
         if (klass.toGenericString().contains("<") && type_arguments.length > 0) {
             m_is_generic_type = true;
-            m_type_parameter_map = JsonUtils.get_type_argument_map(klass, type_arguments);
+            m_type_parameter_map = JsonUtils.get_typearg_map(klass, type_arguments);
         } else m_type_parameter_map = new HashMap<>();
     }
 
@@ -70,11 +70,11 @@ public class Typedef<T> {
         return m_type_parameter_map.get(type_parameter);
     }
 
-    public Class<?> first_type_arg () {
+    public Class<?> type_arg1 () {
         return m_type_arguments[0];
     }
 
-    public Class<?> second_type_arg () {
+    public Class<?> type_arg2 () {
         return m_type_arguments[1];
     }
 

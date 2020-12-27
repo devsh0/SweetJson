@@ -35,7 +35,7 @@ public class Main {
             var person = value.as_map();
             System.out.println(person.get("firstname").as_string());
             System.out.println(person.get("lastname").as_string());
-            System.out.println(person.get("skills").as_list().get(0));
+            System.out.println(person.get("skills").as_list().get(0).as_string());
         }
     }
 }
@@ -87,21 +87,21 @@ data:
 ```java
 public class Main {
     public static void main (String[] args) throws IOException {
-        var json = Files.readString(Paths.get("temp.json"));
-        
+        var json = Files.readString(Paths.get("data.json"));
+
         // Register a binder for `java.util.List`.
-        // `element` is the JSON element that we are dealing with.
-        // `typedef` describes the type of the variable to which the element will be bound.
+        // `value` is the JsonValue that we are dealing with.
+        // `typedef` describes the type of the variable to which the JsonValue will be bound.
         // `bag` contains data that maybe useful to the binder (such as hints for implementation
         // to be used as the model for this binding).
-        SweetJson.register_binder(Typedef.wrap(List.class), (element, typedef, bag) -> {
+        SweetJson.register_binder(Typedef.wrap(List.class), (value, typedef, bag) -> {
             var model = new ArrayList<>();
-            var arg = definition.first_type_arg();
-            var list = element.as_list();
+            var arg = typedef.type_arg1();
+            var list = value.as_list();
             list.forEach(entry -> model.add(entry.bind_to(arg)));
             return model;
         });
-        
+
         var user = JsonParser.parse(json).bind_to(User.class);
         // Assuming `User` has a `List` named `skills`...
         System.out.println(user.skills.get(0));
@@ -149,10 +149,11 @@ class Server <T> {
 @SuppressWarnings("unchecked")
 public class Main {
     public static void main (String[] args) {
-        var server_element = JsonParser.parse(Paths.get("server_response.json"));
+        var json_value = JsonParser.parse(Paths.get("data.json"));
         // bind_to_generic(Prototype.class, Typearg1.class...TypeargN.class)
-        Server<Employee> server = server_element.bind_to_generic(Server.class, Employee.class);
-        server.get_user().print_alias(); // Prints "doejohn"
+        var server = json_value.bind_to_generic(Server.class, Employee.class);
+        var employee = (Employee)server.get_user();
+        employee.print_alias(); // Prints "doejohn"
     }
 }
 ```

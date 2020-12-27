@@ -22,15 +22,15 @@ public class JsonPrimitiveBinder<T> implements JsonBinder<T>
 
     @SuppressWarnings("unchecked")
     @Override
-    public T construct (final JsonValue element, final Typedef<T> definition, final Bag bag)
+    public T construct (final JsonValue value, final Typedef<T> definition, final Bag bag)
     {
-        var type = element.get_type();
+        var type = value.get_type();
         return switch (type)
                 {
-                    case STRING -> (T) element.as_string();
-                    case NUMBER -> (T) JsonUtils.get_number_field(element, definition.klass());
-                    case BOOL -> (T) Boolean.valueOf(element.as_bool());
-                    case NULL -> (T) element.as_object();
+                    case STRING -> (T) value.as_string();
+                    case NUMBER -> (T) JsonUtils.get_number_field(value, definition.klass());
+                    case BOOL -> (T) Boolean.valueOf(value.as_bool());
+                    case NULL -> (T) value.as_object();
                     default -> throw new RuntimeException("Attempted to construct primitive from `" + (type) + "`!");
                 };
     }
