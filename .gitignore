@@ -3,3 +3,6 @@
 build
 settings.gradle
 src/test/java/TestTest.java
+gradlew
+gradlew.bat
+gradle/

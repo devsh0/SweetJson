@@ -41,6 +41,19 @@ class JsonParserTest
     }
 
     @Test
+    void test_parsing_nested_object ()
+    {
+        var outerElement = parser("{\"prop\": {}}").parse();
+        assertEquals(JsonValue.JsonType.OBJECT, outerElement.get_type());
+        var map = outerElement.as_map();
+        assertTrue(map.containsKey("prop"));
+        var innerElement = map.get("prop");
+        assertEquals(JsonValue.JsonType.OBJECT, innerElement.get_type());
+        map = innerElement.as_map();
+        assertTrue(map.isEmpty());
+    }
+
+    @Test
     void test_parsing_array ()
     {
         var json = parser("[]").parse();
@@ -52,6 +65,20 @@ class JsonParserTest
         assertEquals(2, alist.size());
         assertEquals(alist.get(0).as_double(), 1);
         assertEquals(alist.get(1).as_double(), 2);
+    }
+
+    @Test
+    void test_parsing_nested_array()
+    {
+        var outerElement = parser("[[]]").parse();
+        assertEquals(JsonValue.JsonType.ARRAY, outerElement.get_type());
+        var outer = outerElement.as_list();
+        assertEquals(1, outer.size());
+
+        var innerElement = outer.get(0);
+        assertEquals(JsonValue.JsonType.ARRAY, innerElement.get_type());
+        var inner = innerElement.as_list();
+        assertEquals(0, inner.size());
     }
 
     @Test
